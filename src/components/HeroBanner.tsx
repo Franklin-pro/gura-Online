@@ -6,25 +6,25 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 const banners = [
   {
     id: 1,
-    title: "Up to 10% off Voucher",
-    description: "Shop the latest electronics and get amazing discounts",
-    image: "/public/lovable-uploads/2c843146-6ea5-4591-8f1b-640040194f69.png",
+    title: "Up to 10% off IPhone 16 Pro",
+    description: "Get the latest iPhone 16 Pro and enjoy up to 10% off on all products",
+    image: "https://www.apple.com/newsroom/images/2024/09/apple-debuts-iphone-16-pro-and-iphone-16-pro-max/article/Apple-iPhone-16-Pro-hero-240909_inline.jpg.large.jpg",
     bgColor: "bg-black",
     textColor: "text-white"
   },
   {
     id: 2,
-    title: "New Summer Collection",
-    description: "Refresh your wardrobe with our latest styles",
-    image: "https://images.unsplash.com/photo-1607082350899-7e105aa886ae?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80",
+    title: "Headphones",
+    description: "Experience the future of audio with our latest headphones",
+    image: "https://cdn.thewirecutter.com/wp-content/media/2023/07/bluetoothheadphones-2048px-0876.jpg",
     bgColor: "bg-rose-100",
     textColor: "text-black"
   },
   {
     id: 3,
-    title: "Smart Home Devices",
-    description: "Transform your living space with cutting-edge technology",
-    image: "https://images.unsplash.com/photo-1558002038-1055e2db8410?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80",
+    title: "cmaera Sony Alpha 7 IV",
+    description: "Capture stunning moments with our latest camera",
+    image: "https://i.ebayimg.com/images/g/mXAAAOSwA9ZlQKSl/s-l1200.jpg",
     bgColor: "bg-blue-900",
     textColor: "text-white"
   }
