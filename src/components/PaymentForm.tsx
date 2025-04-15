@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { 
   Form, 
@@ -13,6 +12,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { CreditCard, Smartphone, Banknote } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { Card, CardContent } from "@/components/ui/card";
+import { usePayment } from "@/hooks/usePayment";
 
 type PaymentMethod = "stripe" | "mobile" | "cash";
 
@@ -23,6 +23,8 @@ interface PaymentFormProps {
 
 export default function PaymentForm({ total, onComplete }: PaymentFormProps) {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("stripe");
+  const { processPayment, isLoading, error } = usePayment();
+  
   const form = useForm({
     defaultValues: {
       accountName: "",
@@ -34,9 +36,19 @@ export default function PaymentForm({ total, onComplete }: PaymentFormProps) {
     }
   });
 
-  const handleSubmit = form.handleSubmit((data) => {
-    console.log("Payment data:", { paymentMethod, ...data });
-    onComplete(paymentMethod);
+  const handleSubmit = form.handleSubmit(async (data) => {
+    try {
+      const paymentData = {
+        ...data,
+        paymentMethod,
+        amount: total
+      };
+      
+      await processPayment(paymentData);
+      onComplete(paymentMethod);
+    } catch (err) {
+      console.error("Payment error:", err.message);
+    }
   });
 
   return (
@@ -107,7 +119,6 @@ export default function PaymentForm({ total, onComplete }: PaymentFormProps) {
                     </FormItem>
                   )}
                 />
-                
                 <FormField
                   control={form.control}
                   name="accountNumber"
@@ -192,8 +203,18 @@ export default function PaymentForm({ total, onComplete }: PaymentFormProps) {
               </div>
             </div>
 
-            <Button type="submit" className="w-full bg-red-500 hover:bg-red-600">
-              Complete Order
+            {error && (
+              <div className="p-4 bg-red-50 text-red-600 rounded-md">
+                {error}
+              </div>
+            )}
+
+            <Button 
+              type="submit" 
+              className="w-full bg-red-500 hover:bg-red-600"
+              disabled={isLoading}
+            >
+              {isLoading ? "Processing..." : "Complete Order"}
             </Button>
           </form>
         </Form>

@@ -15,6 +15,14 @@ import Signup from "./pages/Signup";
 import ForgotPassword from "./pages/ForgotPassword";
 import NotFound from "./pages/NotFound";
 import { ShopProvider } from "./context/ShopContext";
+import Profile from "./pages/Profile";
+import PaymentSuccess from "./pages/PaymentSuccess";
+import AdminLayout from "./pages/admin/DashboardLayout";
+import Dashboard from "./pages/admin/Dashboard";
+import AdminProducts from "./pages/admin/products/ListProducts";
+import CreateProduct from "./pages/admin/products/CreateProduct";
+import Orders from "./pages/admin/orders";
+import Customers from "./pages/admin/customers"; 
 
 const queryClient = new QueryClient();
 
@@ -35,7 +43,16 @@ const App = () => (
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/payment-success" element={<PaymentSuccess />} />
+
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<Dashboard />} />
+              <Route path="products" element={<AdminProducts />} />
+              <Route path="products/create" element={<CreateProduct />} />
+              <Route path="orders" element={<Orders />} />
+              <Route path="customers" element={<Customers />} />
+            </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

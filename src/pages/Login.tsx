@@ -8,20 +8,23 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { LucideApple, Globe, Mail } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import useLogin from "@/hooks/useLogin";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const navigate = useNavigate();
+  const { login, loading } = useLogin();
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log({ email, password, rememberMe });
-    // In a real app, you would authenticate the user here
-    navigate("/");
-  };
-
+// Login.tsx
+const handleLogin = async (e: React.FormEvent) => {
+  e.preventDefault();
+  const success = await login(email, password);
+  if (!success) {
+      navigate("/admin");
+  }
+};
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -78,8 +81,9 @@ export default function Login() {
                 <Button 
                   type="submit" 
                   className="w-full bg-red-600 hover:bg-red-700"
+                  disabled={loading}
                 >
-                  Sign in
+               {loading ? "Loading..." : "Sign In"}
                 </Button>
 
                 <div className="relative my-4">
@@ -120,7 +124,7 @@ export default function Login() {
             </div>
           </div>
           <div className="hidden md:block bg-gray-100" style={{ 
-            backgroundImage: "url('/lovable-uploads/d7468be3-bbcf-4c6b-a6d5-db7925099829.png')", 
+            backgroundImage: "url('https://cdn11.bigcommerce.com/s-bxamz43bkh/images/stencil/1280x1280/products/11532/13179/EP300RD__31303.1676670607.jpg?c=1')", 
             backgroundSize: "cover", 
             backgroundPosition: "center" 
           }}>
