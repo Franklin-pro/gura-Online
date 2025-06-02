@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -22,7 +21,8 @@ import Dashboard from "./pages/admin/Dashboard";
 import AdminProducts from "./pages/admin/products/ListProducts";
 import CreateProduct from "./pages/admin/products/CreateProduct";
 import Orders from "./pages/admin/orders";
-import Customers from "./pages/admin/customers"; 
+import Customers from "./pages/admin/customers";
+import PrivateRoute from "./components/PrivateRoutes";
 
 const queryClient = new QueryClient();
 
@@ -35,24 +35,26 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
-            <Route path="/cart" element={<Cart />} />
-            <Route path="/favorites" element={<Favorites />} />
+            <Route path="/cart" element={<PrivateRoute><Cart /></PrivateRoute>} />
+            <Route path="/favorites" element={<PrivateRoute><Favorites /></PrivateRoute>} />
             <Route path="/product/:id" element={<ProductDetails />} />
             <Route path="/category/:categoryName" element={<CategoryPage />} />
             <Route path="/shop" element={<Shop />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/profile" element={<Profile />} />
+            <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
             <Route path="/payment-success" element={<PaymentSuccess />} />
 
-            <Route path="/admin" element={<AdminLayout />}>
+            {/* Corrected admin routes */}
+            <Route path="/admin" element={<PrivateRoute><AdminLayout /></PrivateRoute>}>
               <Route index element={<Dashboard />} />
               <Route path="products" element={<AdminProducts />} />
               <Route path="products/create" element={<CreateProduct />} />
               <Route path="orders" element={<Orders />} />
               <Route path="customers" element={<Customers />} />
             </Route>
+
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

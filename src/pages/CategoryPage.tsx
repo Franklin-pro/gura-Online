@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import Header from "@/components/Header";
@@ -8,17 +7,26 @@ import { exploreProducts } from "@/data/products";
 import { Filter, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-// This is a mock function to simulate fetching products by category
-// In a real application, this would connect to an API
 const getProductsByCategory = (category: string) => {
-  // For demo purposes, we'll just return all products
-  // In a real application, you would filter by category from an API
-  return exploreProducts;
+  if (!category) return exploreProducts;
+  return exploreProducts.filter(product => 
+    product.category.toLowerCase() === category.toLowerCase()
+  );
 };
+interface Product {
+  id: number;
+  name: string;
+  image: string;
+  price: number;
+  rating: number;
+  reviews: number;
+  category: string;
+  description?: string;
+}
 
 const CategoryPage = () => {
   const { categoryName } = useParams<{ categoryName: string }>();
-  const [products, setProducts] = useState(exploreProducts);
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
 
@@ -32,6 +40,12 @@ const CategoryPage = () => {
     }, 500);
   }, [categoryName]);
 
+  // Function to format category name for display
+  const formatCategoryName = (name: string | undefined) => {
+    if (!name) return "All Products";
+    return name.charAt(0).toUpperCase() + name.slice(1);
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -39,11 +53,11 @@ const CategoryPage = () => {
         <div className="flex items-center gap-2 mb-4 text-sm">
           <Link to="/" className="text-gray-500 hover:text-gray-700">Home</Link>
           <span className="text-gray-500">/</span>
-          <span className="font-medium">{categoryName || "Category"}</span>
+          <span className="font-medium">{formatCategoryName(categoryName)}</span>
         </div>
 
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold">{categoryName || "Category"}</h1>
+          <h1 className="text-2xl font-bold">{formatCategoryName(categoryName)}</h1>
           <Button 
             variant="outline" 
             size="sm" 
@@ -107,8 +121,11 @@ const CategoryPage = () => {
           <>
             {products.length === 0 ? (
               <div className="text-center py-12">
-                <h3 className="text-lg font-medium mb-2">No products found</h3>
-                <p className="text-gray-500">Try adjusting your filters or search criteria</p>
+                <h3 className="text-lg font-medium mb-2">No products found in this category</h3>
+                <p className="text-gray-500">Try browsing other categories</p>
+                <Link to="/" className="text-blue-500 hover:underline mt-4 inline-block">
+                  Back to Home
+                </Link>
               </div>
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">

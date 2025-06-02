@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { 
-  Form, 
-  FormControl, 
-  FormField, 
-  FormItem, 
-  FormLabel 
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,7 @@ import { CreditCard, Smartphone, Banknote } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { Card, CardContent } from "@/components/ui/card";
 import { usePayment } from "@/hooks/usePayment";
+import InputMask from "react-input-mask";
 
 type PaymentMethod = "stripe" | "mobile" | "cash";
 
@@ -24,7 +25,7 @@ interface PaymentFormProps {
 export default function PaymentForm({ total, onComplete }: PaymentFormProps) {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("stripe");
   const { processPayment, isLoading, error } = usePayment();
-  
+
   const form = useForm({
     defaultValues: {
       accountName: "",
@@ -33,17 +34,19 @@ export default function PaymentForm({ total, onComplete }: PaymentFormProps) {
       routingNumber: "",
       mobileNumber: "",
       paymentMethod: "stripe",
-    }
+    },
   });
 
   const handleSubmit = form.handleSubmit(async (data) => {
     try {
+      const amountToPay = paymentMethod === "cash" ? total * 0.4 : total;
+
       const paymentData = {
         ...data,
         paymentMethod,
-        amount: total
+        amount: amountToPay,
       };
-      
+
       await processPayment(paymentData);
       onComplete(paymentMethod);
     } catch (err) {
@@ -55,7 +58,7 @@ export default function PaymentForm({ total, onComplete }: PaymentFormProps) {
     <Card className="w-full">
       <CardContent className="pt-6">
         <h3 className="text-lg font-semibold mb-4">Payment Method</h3>
-        
+
         <Form {...form}>
           <form onSubmit={handleSubmit} className="space-y-6">
             <FormField
@@ -73,17 +76,23 @@ export default function PaymentForm({ total, onComplete }: PaymentFormProps) {
                   >
                     <div className="flex items-center space-x-2 border p-3 rounded-md cursor-pointer hover:bg-gray-50">
                       <RadioGroupItem value="stripe" id="stripe" />
-                      <FormLabel htmlFor="stripe" className="flex-1 cursor-pointer">
+                      <FormLabel
+                        htmlFor="stripe"
+                        className="flex-1 cursor-pointer"
+                      >
                         <div className="flex items-center gap-2">
                           <CreditCard className="h-5 w-5 text-blue-500" />
-                          <span>Pay with Card (Stripe)</span>
+                          <span>Pay with Card</span>
                         </div>
                       </FormLabel>
                     </div>
 
                     <div className="flex items-center space-x-2 border p-3 rounded-md cursor-pointer hover:bg-gray-50">
                       <RadioGroupItem value="mobile" id="mobile" />
-                      <FormLabel htmlFor="mobile" className="flex-1 cursor-pointer">
+                      <FormLabel
+                        htmlFor="mobile"
+                        className="flex-1 cursor-pointer"
+                      >
                         <div className="flex items-center gap-2">
                           <Smartphone className="h-5 w-5 text-green-500" />
                           <span>Mobile Money</span>
@@ -93,7 +102,10 @@ export default function PaymentForm({ total, onComplete }: PaymentFormProps) {
 
                     <div className="flex items-center space-x-2 border p-3 rounded-md cursor-pointer hover:bg-gray-50">
                       <RadioGroupItem value="cash" id="cash" />
-                      <FormLabel htmlFor="cash" className="flex-1 cursor-pointer">
+                      <FormLabel
+                        htmlFor="cash"
+                        className="flex-1 cursor-pointer"
+                      >
                         <div className="flex items-center gap-2">
                           <Banknote className="h-5 w-5 text-yellow-500" />
                           <span>Cash on Delivery</span>
@@ -125,13 +137,19 @@ export default function PaymentForm({ total, onComplete }: PaymentFormProps) {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Card Number</FormLabel>
-                      <FormControl>
-                        <Input placeholder="4242 4242 4242 4242" {...field} />
-                      </FormControl>
+                      <InputMask
+                        mask="9999 9999 9999 9999"
+                        value={field.value}
+                        onChange={field.onChange}
+                      >
+                        {(inputProps) => (
+                          <Input {...inputProps} placeholder="Card Number" />
+                        )}
+                      </InputMask>
                     </FormItem>
                   )}
                 />
-                
+
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
@@ -145,7 +163,7 @@ export default function PaymentForm({ total, onComplete }: PaymentFormProps) {
                       </FormItem>
                     )}
                   />
-                  
+
                   <FormField
                     control={form.control}
                     name="bankName"
@@ -170,9 +188,15 @@ export default function PaymentForm({ total, onComplete }: PaymentFormProps) {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Mobile Number</FormLabel>
-                      <FormControl>
-                        <Input placeholder="+1 234 567 8900" {...field} />
-                      </FormControl>
+                      <InputMask
+                        mask="+999 999 999 9999"
+                        value={field.value}
+                        onChange={field.onChange}
+                      >
+                        {(inputProps) => (
+                          <Input {...inputProps} placeholder="Mobile Number" />
+                        )}
+                      </InputMask>
                     </FormItem>
                   )}
                 />
@@ -182,7 +206,8 @@ export default function PaymentForm({ total, onComplete }: PaymentFormProps) {
             {paymentMethod === "cash" && (
               <div className="border p-4 rounded-md">
                 <p className="text-sm text-gray-600">
-                  You will pay when your order is delivered. Please make sure to have the exact amount ready.
+                  You will pay when your order is delivered. Please make sure to
+                  have the exact amount ready.
                 </p>
               </div>
             )}
@@ -209,8 +234,8 @@ export default function PaymentForm({ total, onComplete }: PaymentFormProps) {
               </div>
             )}
 
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               className="w-full bg-red-500 hover:bg-red-600"
               disabled={isLoading}
             >
