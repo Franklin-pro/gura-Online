@@ -20,11 +20,23 @@ export default function Login() {
 // Login.tsx
 const handleLogin = async (e: React.FormEvent) => {
   e.preventDefault();
+
   const success = await login(email, password);
-  if (!success) {
-      navigate("/admin");
+
+  if (success) {
+    const storedUser = localStorage.getItem("userInfo");
+    if (!storedUser) return;
+    const userInfo = JSON.parse(storedUser);
+
+    if (userInfo.role === "admin") {
+      navigate("/admin", { replace: true });
+    } else {
+      navigate("/", { replace: true });
+    }
   }
 };
+
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />

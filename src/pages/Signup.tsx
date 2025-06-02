@@ -13,6 +13,7 @@ export default function Signup() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [phone, setPhone] = useState("");
   const { register, isLoading } = useRegister();
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const navigate = useNavigate();
@@ -20,7 +21,7 @@ export default function Signup() {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    const success = await register({ name, email, password });
+    const success = await register({ name, email,phone, password });
     if (success) {
       navigate("/login");
     }
@@ -58,6 +59,17 @@ export default function Signup() {
                     placeholder="email@example.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Phone Number</Label>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    placeholder="+1 234 567 8900"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
                     required
                   />
                 </div>

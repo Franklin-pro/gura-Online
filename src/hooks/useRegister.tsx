@@ -8,6 +8,7 @@ const useRegister = () => {
 
     interface Data {
         name: string;
+        phone: string;
         email: string;
         password: string;
     }
@@ -17,10 +18,10 @@ const useRegister = () => {
 const register = async (data: Data) => {
     setIsLoading(true);
     try {
-      const success = handleInputError(data.name, data.email, data.password);
+      const success = handleInputError(data.name, data.email,data.phone, data.password);
       if (!success) return false;
   
-      const res = await fetch("/api/auth/register", {
+      const res = await fetch("/api/v1/auth/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -59,8 +60,8 @@ const register = async (data: Data) => {
 };
 export default useRegister;
 
-function handleInputError(username: string, email: string, password: string): boolean {
-    if (!username || !email || !password) {
+function handleInputError(username: string, email: string,phone:string, password: string): boolean {
+    if (!username || !email || !password || !phone) {
       toast({
         variant: "destructive",
         title: "Uh oh! Something went wrong.",

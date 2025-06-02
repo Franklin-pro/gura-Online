@@ -1,13 +1,37 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Search, ShoppingCart, User, Heart, Menu, X } from "lucide-react";
+import {
+  Search,
+  ShoppingCart,
+  Heart,
+  Menu,
+  X,
+  User,
+  Settings,
+  Package,
+  LogOut,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useShop } from "@/context/ShopContext";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import useLogin from "@/hooks/useLogin";
 
+
+// Categories
 const categories = [
   "Home",
   "Shop",
@@ -16,17 +40,26 @@ const categories = [
   "Electronics",
   "Home & Living",
   "Sports",
-  "Toys & Games"
+  "Toys & Games",
 ];
 
 export default function Header() {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const {logout,loading} = useLogin()
+
   const isMobile = useIsMobile();
   const { getCartQuantity } = useShop();
   const cartQuantity = getCartQuantity();
   const navigate = useNavigate();
-  
+
+  // Simulate checking login status (e.g., token in localStorage)
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    setIsLoggedIn(!!token);
+  }, []);
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
@@ -34,15 +67,19 @@ export default function Header() {
       setSearchQuery("");
     }
   };
-  
+
+  const handleLogout = () => {
+    logout();
+    setIsLoggedIn(false);
+    navigate("/login");
+  };
+
   return (
     <header className="sticky top-0 z-50 w-full bg-white border-b">
-      {/* Top header with logo, search, and actions */}
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-        {/* Logo */}
         <Link to="/" className="font-bold text-xl">
-          <span className="text-black">Gura</span>
-          <span className="text-red-600">Online</span>
+          <span className="text-black">Tech</span>
+          <span className="text-red-600">Sparkle</span>
         </Link>
 
         {/* Search bar - hidden on mobile */}
@@ -60,19 +97,64 @@ export default function Header() {
 
         {/* Action Icons */}
         <div className="flex items-center gap-4">
-          <Link to="/login" className="hidden md:flex items-center text-sm font-medium text-gray-700 hover:text-red-600">
-            Login
-          </Link>
-          <Link to="/signup" className="hidden md:flex items-center text-sm font-medium text-gray-700 hover:text-red-600">
-            Sign Up
-          </Link>
+          {isLoggedIn ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger className="focus:outline-none">
+                <Avatar className="h-8 w-8 hover:ring-2 hover:ring-offset-2 hover:ring-gray-200 transition-all">
+                  <AvatarImage src="/placeholder.svg" />
+                  <AvatarFallback>
+                    <User className="h-4 w-4" />
+                  </AvatarFallback>
+                </Avatar>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem asChild>
+                  <Link to="/profile" className="flex items-center gap-2 cursor-pointer">
+                    <User className="h-4 w-4" />
+                    <span>Profile</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/orders" className="flex items-center gap-2 cursor-pointer">
+                    <Package className="h-4 w-4" />
+                    <span>My Orders</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/settings" className="flex items-center gap-2 cursor-pointer">
+                    <Settings className="h-4 w-4" />
+                    <span>Settings</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={handleLogout}
+                  className="flex items-center gap-2 cursor-pointer text-red-600"
+                >
+                  <LogOut className="h-4 w-4" />
+                  <span>Logout</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <>
+              <Link to="/login" className="hidden md:flex items-center text-sm font-medium text-gray-700 hover:text-red-600">
+                Login
+              </Link>
+              <Link to="/signup" className="hidden md:flex items-center text-sm font-medium text-gray-700 hover:text-red-600">
+                Sign Up
+              </Link>
+            </>
+          )}
           <Link to="/favorites" className="hidden md:flex items-center justify-center h-9 w-9 text-gray-700 hover:text-black">
             <Heart className="h-5 w-5" />
           </Link>
           <Link to="/cart" className="relative flex items-center justify-center h-9 w-9 text-gray-700 hover:text-black">
             <ShoppingCart className="h-5 w-5" />
             {cartQuantity > 0 && (
-              <span className="absolute -top-1 -right-1 h-4 w-4 text-xs flex items-center justify-center bg-red-600 text-white rounded-full">{cartQuantity}</span>
+              <span className="absolute -top-1 -right-1 h-4 w-4 text-xs flex items-center justify-center bg-red-600 text-white rounded-full">
+                {cartQuantity}
+              </span>
             )}
           </Link>
           <button 
@@ -84,7 +166,7 @@ export default function Header() {
         </div>
       </div>
 
-      {/* Categories navigation */}
+      {/* Categories */}
       <nav className={cn(
         "bg-white border-t md:border-t-0 transition-all duration-300 overflow-hidden",
         showMobileMenu ? "max-h-screen" : "max-h-0 md:max-h-screen"
@@ -105,7 +187,7 @@ export default function Header() {
         </div>
       </nav>
 
-      {/* Mobile search and links - only shown on mobile */}
+      {/* Mobile Search + Links */}
       <div className={cn(
         "px-4 py-3 bg-white border-t transition-all duration-300 overflow-hidden md:hidden",
         showMobileMenu ? "max-h-screen" : "max-h-0"
@@ -122,14 +204,40 @@ export default function Header() {
           </button>
         </form>
         <div className="flex flex-col space-y-2">
-          <Link to="/login" className="flex items-center gap-2 py-2 px-3 hover:bg-gray-100 rounded-md">
-            <User className="h-5 w-5" />
-            <span>Login</span>
-          </Link>
-          <Link to="/signup" className="flex items-center gap-2 py-2 px-3 hover:bg-gray-100 rounded-md">
-            <User className="h-5 w-5" />
-            <span>Sign Up</span>
-          </Link>
+          {isLoggedIn ? (
+            <>
+              <Link to="/profile" className="flex items-center gap-2 py-2 px-3 hover:bg-gray-100 rounded-md">
+                <User className="h-5 w-5" />
+                <span>Profile</span>
+              </Link>
+              <Link to="/orders" className="flex items-center gap-2 py-2 px-3 hover:bg-gray-100 rounded-md">
+                <Package className="h-5 w-5" />
+                <span>My Orders</span>
+              </Link>
+              <Link to="/settings" className="flex items-center gap-2 py-2 px-3 hover:bg-gray-100 rounded-md">
+                <Settings className="h-5 w-5" />
+                <span>Settings</span>
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-2 py-2 px-3 hover:bg-gray-100 rounded-md text-red-600 w-full text-left"
+              >
+                <LogOut className="h-5 w-5" />
+                <span>Logout</span>
+              </button>
+            </>
+          ) : (
+            <>
+              <Link to="/login" className="flex items-center gap-2 py-2 px-3 hover:bg-gray-100 rounded-md">
+                <User className="h-5 w-5" />
+                <span>Login</span>
+              </Link>
+              <Link to="/signup" className="flex items-center gap-2 py-2 px-3 hover:bg-gray-100 rounded-md">
+                <User className="h-5 w-5" />
+                <span>Sign Up</span>
+              </Link>
+            </>
+          )}
           <Link to="/favorites" className="flex items-center gap-2 py-2 px-3 hover:bg-gray-100 rounded-md">
             <Heart className="h-5 w-5" />
             <span>Favorites</span>
