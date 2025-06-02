@@ -24,7 +24,7 @@ const useLogin = () => {
             const data = await response.json();
             setUser(data.user);
             localStorage.setItem('token', data.token);
-            localStorage.setItem('userInfo', JSON.stringify(data.user));
+            localStorage.setItem('userInfo', JSON.stringify(data));
             if (response.ok) {
                 toast({
                     title: 'Login Successful',

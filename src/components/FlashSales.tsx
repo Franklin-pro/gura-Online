@@ -10,8 +10,9 @@ interface ProductProps {
   id: number;
   name: string;
   image: string;
-  currentPrice: number;
-  originalPrice: number;
+  price: number;
+  description: string;
+  category: string;
   discount: number;
   rating: number;
   reviews: number;
@@ -209,18 +210,19 @@ function ProductCard({ product }: { product: ProductProps }) {
       </div>
       
       <div className="p-4 space-y-2">
-        <div className="absolute top-2 left-2 bg-red-600 text-white text-xs font-medium px-2 py-1 rounded">
+        {/* <div className="absolute top-2 left-2 bg-red-600 text-white text-xs font-medium px-2 py-1 rounded">
           -{product.discount}%
-        </div>
+        </div> */}
         
-        <h3 className="font-medium text-sm truncate">{product.name}</h3>
+        <h3 className="font-bold text-sm truncate">{product.name}</h3>
+        <p className="text-sm">{product.description}</p>
         
         <div className="flex items-center gap-2">
-          <span className="text-red-600 font-bold">${product.currentPrice.toFixed(2)}</span>
-          <span className="text-gray-500 text-sm line-through">${product.originalPrice.toFixed(2)}</span>
+          <span className="text-red-600 font-bold">${product.price.toFixed(2)}</span>
+
         </div>
         
-        <div className="flex items-center text-sm">
+        {/* <div className="flex items-center text-sm">
           <div className="flex text-yellow-400">
             {Array(5).fill(0).map((_, i) => (
               <Star 
@@ -233,7 +235,7 @@ function ProductCard({ product }: { product: ProductProps }) {
             ))}
           </div>
           <span className="text-xs text-gray-500 ml-1">({product.reviews})</span>
-        </div>
+        </div> */}
         
         <Button 
           variant="default" 

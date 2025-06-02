@@ -26,9 +26,7 @@ const handleLogin = async (e: React.FormEvent) => {
   if (success) {
     const storedUser = localStorage.getItem("userInfo");
     if (!storedUser) return;
-
     const userInfo = JSON.parse(storedUser);
-    console.log("User Info:", userInfo.role);
 
     if (userInfo.role === "admin") {
       navigate("/admin", { replace: true });
