@@ -21,7 +21,7 @@ const register = async (data: Data) => {
       const success = handleInputError(data.name, data.email,data.phone, data.password);
       if (!success) return false;
   
-      const res = await fetch("/api/v1/auth/register", {
+      const res = await fetch("https://gura-online-bn.onrender.com/api/v1/auth/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -23,6 +23,7 @@ import CreateProduct from "./pages/admin/products/CreateProduct";
 import Orders from "./pages/admin/orders";
 import Customers from "./pages/admin/customers";
 import PrivateRoute from "./components/PrivateRoutes";
+import ResetPassword from "./pages/ResetPassword";
 
 const queryClient = new QueryClient();
 
@@ -43,6 +44,7 @@ const App = () => (
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password/:token" element={<ResetPassword />} />
             <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
             <Route path="/payment-success" element={<PaymentSuccess />} />
 

@@ -3,42 +3,25 @@ import { useParams, Link } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ProductCard from "@/components/ProductCard";
-import { exploreProducts } from "@/data/products";
 import { Filter, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-const getProductsByCategory = (category: string) => {
-  if (!category) return exploreProducts;
-  return exploreProducts.filter(product => 
-    product.category.toLowerCase() === category.toLowerCase()
-  );
-};
-interface Product {
-  id: number;
-  name: string;
-  image: string;
-  price: number;
-  rating: number;
-  reviews: number;
-  category: string;
-  description?: string;
-}
+import { useProductStore } from "@/hooks/useProductStore";
 
 const CategoryPage = () => {
   const { categoryName } = useParams<{ categoryName: string }>();
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+  const {
+    fetchProductsByCategory,
+    products,
+    loading,
+  } = useProductStore();
+
   const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
-    setLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      const fetchedProducts = getProductsByCategory(categoryName || "");
-      setProducts(fetchedProducts);
-      setLoading(false);
-    }, 500);
-  }, [categoryName]);
+    if (categoryName) {
+      fetchProductsByCategory(categoryName);
+    }
+  }, [categoryName, fetchProductsByCategory]);
 
   // Function to format category name for display
   const formatCategoryName = (name: string | undefined) => {
@@ -109,32 +92,28 @@ const CategoryPage = () => {
 
         {loading ? (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-            {[1, 2, 3, 4, 5, 6, 7, 8].map((skeleton) => (
-              <div key={skeleton} className="border rounded-md p-4">
+            {[...Array(8)].map((_, index) => (
+              <div key={index} className="border rounded-md p-4">
                 <div className="h-40 bg-gray-200 rounded-md animate-pulse mb-4"></div>
                 <div className="h-4 bg-gray-200 rounded animate-pulse mb-2"></div>
                 <div className="h-4 bg-gray-200 rounded animate-pulse w-2/3"></div>
               </div>
             ))}
           </div>
+        ) : products.length === 0 ? (
+          <div className="text-center py-12">
+            <h3 className="text-lg font-medium mb-2">No products found in this category</h3>
+            <p className="text-gray-500">Try browsing other categories</p>
+            <Link to="/" className="text-blue-500 hover:underline mt-4 inline-block">
+              Back to Home
+            </Link>
+          </div>
         ) : (
-          <>
-            {products.length === 0 ? (
-              <div className="text-center py-12">
-                <h3 className="text-lg font-medium mb-2">No products found in this category</h3>
-                <p className="text-gray-500">Try browsing other categories</p>
-                <Link to="/" className="text-blue-500 hover:underline mt-4 inline-block">
-                  Back to Home
-                </Link>
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-                {products.map((product) => (
-                  <ProductCard key={product.id} product={product} />
-                ))}
-              </div>
-            )}
-          </>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+            {products.map((product) => (
+              <ProductCard key={product._id} product={product} />
+            ))}
+          </div>
         )}
       </main>
       <Footer />

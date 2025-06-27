@@ -14,7 +14,7 @@ const useLogin = () => {
 
         setLoading(true);
         try {
-            const response = await fetch('/api/v1/auth/login', {
+            const response = await fetch('https://gura-online-bn.onrender.com/api/v1/auth/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -54,7 +54,7 @@ const useLogin = () => {
     }
     const logout = async() => {
         try {
-            await fetch('/api/v1/auth/logout', {
+            await fetch('https://gura-online-bn.onrender.com/api/v1/auth/logout', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

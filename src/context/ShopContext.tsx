@@ -3,6 +3,7 @@ import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 export interface Product {
   id: number;
+  _id?: string; // Optional for compatibility with existing products
   name: string;
   image: string;
   price: number;

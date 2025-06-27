@@ -24,6 +24,7 @@ interface Product {
     deleteProduct: (productId: string) => Promise<void>;
     toggleFeaturedProduct: (productId: string) => Promise<void>;
     fetchFeaturedProducts: () => Promise<void>;
+	fetchSingleProduct: (productId: string) => Promise<Product | null>;
   }
 
 export const useProductStore = create<ProductStore>((set) => ({
@@ -34,7 +35,7 @@ export const useProductStore = create<ProductStore>((set) => ({
 	createProduct: async (productData) => {
 		set({ loading: true });
 		try {
-			const res = await axios.post("/api/v1/products/", productData);
+			const res = await axios.post("https://gura-online-bn.onrender.com/api/v1/products/", productData);
 			set((prevState) => ({
 				products: [...prevState.products, res.data],
 				loading: false,
@@ -48,17 +49,31 @@ export const useProductStore = create<ProductStore>((set) => ({
 	fetchAllProducts: async () => {
 		set({ loading: true });
 		try {
-			const response = await axios.get("/api/v1/products/");
+			const response = await axios.get("https://gura-online-bn.onrender.com/api/v1/products");
 			set({ products: response.data.data, loading: false });
 		} catch (error) {
 			set({ error: "Failed to fetch products", loading: false });
-			toast.error(error.response.data.error || "Failed to fetch products");
+			toast.error("Failed to fetch products");
 		}
 	},
+fetchSingleProduct: async (productId:string) => {
+  set({ loading: true });
+  try {
+    const response = await axios.get(`https://gura-online-bn.onrender.com/api/v1/products/${productId}`);
+    set({ loading: false });
+	console.log("Fetched product:", response.data.data);
+    return response.data.data;
+  } catch (error) {
+    set({ error: "Failed to fetch product", loading: false });
+    toast.error(error.response?.data?.error || "Failed to fetch product");
+    return null;
+  }
+},
+
 	fetchProductsByCategory: async (category) => {
 		set({ loading: true });
 		try {
-			const response = await axios.get(`/api/v1/products/category/${category}`);
+			const response = await axios.get(`https://gura-online-bn.onrender.com/api/v1/products/category/${category}`);
 			set({ products: response.data.data, loading: false });
 		} catch (error) {
 			set({ error: "Failed to fetch products", loading: false });
@@ -68,7 +83,7 @@ export const useProductStore = create<ProductStore>((set) => ({
 	deleteProduct: async (productId) => {
 		set({ loading: true });
 		try {
-			await axios.delete(`/api/v1/products/${productId}`);
+			await axios.delete(`https://gura-online-bn.onrender.com/api/v1/products/${productId}`);
 			set((prevProducts) => ({
 				products: prevProducts.products.filter((product) => product._id !== productId),
 				loading: false,
@@ -81,7 +96,7 @@ export const useProductStore = create<ProductStore>((set) => ({
 	toggleFeaturedProduct: async (productId) => {
 		set({ loading: true });
 		try {
-			const response = await axios.patch(`/api/v1/products/${productId}`);
+			const response = await axios.patch(`https://gura-online-bn.onrender.com/api/v1/products/${productId}`);
 			// this will update the isFeatured prop of the product
 			set((prevProducts) => ({
 				products: prevProducts.products.map((product) =>
@@ -97,7 +112,7 @@ export const useProductStore = create<ProductStore>((set) => ({
 	fetchFeaturedProducts: async () => {
 		set({ loading: true });
 		try {
-			const response = await axios.get("/api/v1/products/featured");
+			const response = await axios.get("https://gura-online-bn.onrender.com/api/v1/products/featured");
 			set({ products: response.data.data, loading: false });
 		} catch (error) {
 			set({ error: "Failed to fetch products", loading: false });

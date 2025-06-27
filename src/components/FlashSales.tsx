@@ -5,6 +5,7 @@ import { Heart, ShoppingCart, ChevronLeft, ChevronRight, Star } from "lucide-rea
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import useGetProducts from "@/hooks/useGetProduct";
+import ProductCard from "./ProductCard";
 
 interface ProductProps {
   id: number;
@@ -136,7 +137,7 @@ export default function FlashSales() {
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-4">
           <div className="w-4 h-8 bg-red-600 rounded-sm"></div>
-          <h2 className="text-2xl font-bold">Flash Sales</h2>
+          <h2 className="text-2xl font-bold">Featured Products</h2>
         </div>
         
         <div className="flex items-center gap-4">
@@ -188,64 +189,5 @@ export default function FlashSales() {
         </Button>
       </div>
     </section>
-  );
-}
-
-// Separate ProductCard component for better organization
-function ProductCard({ product }: { product: ProductProps }) {
-  return (
-    <Card className="relative overflow-hidden group border border-gray-200">
-      <div className="absolute top-2 right-2 z-10 flex flex-col gap-2">
-        <button className="h-8 w-8 rounded-full bg-white shadow-md flex items-center justify-center text-gray-700 hover:text-red-600 transition-colors">
-          <Heart className="h-4 w-4" />
-        </button>
-      </div>
-      
-      <div className="bg-gray-50 p-4 flex items-center justify-center h-48">
-        <img 
-          src={product.image} 
-          alt={product.name} 
-          className="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-105"
-        />
-      </div>
-      
-      <div className="p-4 space-y-2">
-        {/* <div className="absolute top-2 left-2 bg-red-600 text-white text-xs font-medium px-2 py-1 rounded">
-          -{product.discount}%
-        </div> */}
-        
-        <h3 className="font-bold text-sm truncate">{product.name}</h3>
-        <p className="text-sm">{product.description}</p>
-        
-        <div className="flex items-center gap-2">
-          <span className="text-red-600 font-bold">${product.price.toFixed(2)}</span>
-
-        </div>
-        
-        {/* <div className="flex items-center text-sm">
-          <div className="flex text-yellow-400">
-            {Array(5).fill(0).map((_, i) => (
-              <Star 
-                key={i} 
-                className={cn(
-                  "h-3 w-3 fill-current",
-                  i < Math.floor(product.rating) ? "text-yellow-400" : "text-gray-300"
-                )}
-              />
-            ))}
-          </div>
-          <span className="text-xs text-gray-500 ml-1">({product.reviews})</span>
-        </div> */}
-        
-        <Button 
-          variant="default" 
-          size="sm" 
-          className="w-full bg-red-600 hover:bg-red-700 mt-2"
-        >
-          <ShoppingCart className="h-4 w-4 mr-2" />
-          Add to Cart
-        </Button>
-      </div>
-    </Card>
   );
 }
