@@ -28,13 +28,13 @@ export const usePayment = () => {
       let endpoint = "";
       switch (paymentData.paymentMethod) {
         case "stripe":
-          endpoint = "/api/payments/stripe";
+          endpoint = "https://gura-online-bn.onrender.com/api/payments/stripe";
           break;
         case "mobile":
-          endpoint = "/api/payments/mobile";
+          endpoint = "https://gura-online-bn.onrender.com/api/payments/mobile";
           break;
         case "cash":
-          endpoint = "/api/payments/cash";
+          endpoint = "https://gura-online-bn.onrender.com/api/payments/cash";
           break;
       }
 

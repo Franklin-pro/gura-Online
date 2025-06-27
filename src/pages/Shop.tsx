@@ -5,6 +5,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ProductCard from "@/components/ProductCard";
 import { exploreProducts } from "@/data/products";
+import { useProductStore } from "@/hooks/useProductStore";
 import { Filter, Grid2X2, Grid3X3, LayoutList, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,6 +22,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 const Shop = () => {
   const [products, setProducts] = useState(exploreProducts);
   const [loading, setLoading] = useState(true);
+    const [visibleProducts, setVisibleProducts] = useState([]);
+   const fetchAllProducts = useProductStore((state) => state.fetchAllProducts);
+    const allProducts = useProductStore((state) => state.products);
+   
   const [showFilters, setShowFilters] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'compact' | 'list'>('grid');
   
@@ -29,10 +34,11 @@ const Shop = () => {
     setLoading(true);
     // Simulate API call
     setTimeout(() => {
-      setProducts(exploreProducts);
+      fetchAllProducts();
+  
       setLoading(false);
     }, 500);
-  }, []);
+  }, [fetchAllProducts]);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -160,9 +166,9 @@ const Shop = () => {
                 viewMode === 'compact' ? 'grid-cols-2 sm:grid-cols-3 md:grid-cols-5' : 
                 'grid-cols-1'
               } gap-4 md:gap-6`}>
-                {products.map((product) => (
-                  <ProductCard key={product.id} product={product} />
-                ))}
+                 {visibleProducts.map((product) => (
+          <ProductCard key={product._id} product={product} />
+        ))}
               </div>
             )}
           </>

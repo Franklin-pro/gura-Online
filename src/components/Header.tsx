@@ -38,7 +38,7 @@ const categories = [
   "Women's Fashion",
   "Men's Fashion",
   "Electronics",
-  "Home & Living",
+  "t-shirts",
   "Sports",
   "Toys & Games",
 ];

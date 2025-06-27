@@ -1,149 +1,90 @@
-
 import { useParams } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Heart, Minus, Plus, ShoppingCart, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { useShop } from "@/context/ShopContext";
 import { toast } from "@/components/ui/sonner";
-import { cn } from "@/lib/utils";
-
-// Sample product data - in a real app, this would come from an API
-import { exploreProducts } from "@/data/products";
+import { useProductStore } from "@/hooks/useProductStore";
 
 const ProductDetails = () => {
-  const { id } = useParams<{ id: string }>();
-  const { addToCart, addToFavorites, favorites } = useShop();
+  const { id } = useParams();
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
-  
-  const product = exploreProducts.find(p => p.id === parseInt(id || "0"));
-  
-  if (!product) {
-    return (
-      <div className="min-h-screen flex flex-col">
-        <Header />
-        <main className="flex-1 container mx-auto px-4 py-8">
-          <div className="text-center py-16">
-            <h1 className="text-2xl font-bold">Product not found</h1>
-            <Button className="mt-4 bg-red-600 hover:bg-red-700" onClick={() => window.history.back()}>
-              Go Back
-            </Button>
-          </div>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
-  
-  const isInFavorites = favorites.some(item => item.id === product.id);
-  
-  const decreaseQuantity = () => {
-    if (quantity > 1) {
-      setQuantity(quantity - 1);
+
+  useEffect(() => {
+ const fetchProduct = async () => {
+    const data = await useProductStore.getState().fetchSingleProduct(id);
+    if (data) {
+      setProduct(data);
     }
-  };
-  
-  const increaseQuantity = () => {
-    setQuantity(quantity + 1);
-  };
-  
-  const handleAddToCart = () => {
-    for (let i = 0; i < quantity; i++) {
-      addToCart(product);
-    }
-    toast.success(`Added ${quantity} ${quantity === 1 ? 'item' : 'items'} to cart`);
-  };
-  
-  const handleAddToFavorites = () => {
-    addToFavorites(product);
-    toast.success("Added to favorites");
+    setLoading(false);
   };
 
+  if (id) {
+    fetchProduct();
+  }
+  }, [id]);
+
+  const handleAddToCart = () => {
+    // Add cart logic here
+    toast.success(`${product.name} added to cart!`);
+  };
+
+  const increaseQty = () => setQuantity((prev) => prev + 1);
+  const decreaseQty = () => setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
+
+  if (loading) return <div className="text-center py-10">Loading...</div>;
+  if (!product) return <div className="text-center py-10">Product not found.</div>;
+
   return (
-    <div className="min-h-screen flex flex-col">
+    <>
       <Header />
-      <main className="flex-1 container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Product Image */}
-          <div className="bg-gray-50 p-6 rounded-lg flex items-center justify-center">
-            <img 
-              src={product.image} 
-              alt={product.name} 
-              className="max-h-96 object-contain"
-            />
+      <div className="max-w-5xl mx-auto px-4 py-10 grid grid-cols-1 md:grid-cols-2 gap-8">
+        <img
+          src={product.image}
+          alt={product.name}
+          className="w-full rounded-2xl object-cover"
+        />
+        <div>
+          <h1 className="text-3xl font-bold mb-2">{product.name}</h1>
+          <div className="flex items-center gap-2 mb-4 text-yellow-500">
+            {[...Array(5)].map((_, i) => (
+              <Star
+                key={i}
+                fill={i < Math.floor(product.rating) ? "currentColor" : "none"}
+                stroke="currentColor"
+                className="w-5 h-5"
+              />
+            ))}
+            <span className="text-sm text-gray-500">({product.rating})</span>
           </div>
-          
-          {/* Product Details */}
-          <div className="space-y-4">
-            <h1 className="text-2xl font-bold">{product.name}</h1>
-            
-            <div className="flex items-center gap-2">
-              <div className="flex text-yellow-400">
-                {Array(5).fill(0).map((_, i) => (
-                  <Star 
-                    key={i} 
-                    className={cn(
-                      "h-4 w-4 fill-current",
-                      i < Math.floor(product.rating) ? "text-yellow-400" : "text-gray-300"
-                    )}
-                  />
-                ))}
-              </div>
-              <span className="text-sm text-gray-500">({product.reviews} reviews)</span>
-            </div>
-            
-            <div className="text-2xl font-bold text-red-600">
-              ${product.price.toFixed(2)}
-            </div>
-            
-            <p className="text-gray-600">
-              {product.description || "This premium product offers exceptional quality and performance. Designed with the user in mind, it combines innovative technology with elegant design to provide an unmatched experience."}
-            </p>
-            
-            {/* Quantity Selector */}
-            <div className="flex items-center space-x-4">
-              <span className="font-medium">Quantity:</span>
-              <div className="flex items-center border rounded-md">
-                <button 
-                  onClick={decreaseQuantity} 
-                  className="px-3 py-1 hover:bg-gray-100"
-                >
-                  <Minus className="h-4 w-4" />
-                </button>
-                <span className="px-4 py-1">{quantity}</span>
-                <button 
-                  onClick={increaseQuantity} 
-                  className="px-3 py-1 hover:bg-gray-100"
-                >
-                  <Plus className="h-4 w-4" />
-                </button>
-              </div>
-            </div>
-            
-            {/* Action Buttons */}
-            <div className="flex flex-wrap gap-4 pt-4">
-              <Button 
-                className="flex-1 bg-red-600 hover:bg-red-700" 
-                onClick={handleAddToCart}
-              >
-                <ShoppingCart className="mr-2 h-5 w-5" /> Add to Cart
-              </Button>
-              
-              <Button 
-                variant="outline" 
-                className={`flex-1 ${isInFavorites ? "text-red-600 border-red-600" : ""}`}
-                onClick={handleAddToFavorites}
-              >
-                <Heart className={`mr-2 h-5 w-5 ${isInFavorites ? "fill-red-600" : ""}`} /> 
-                {isInFavorites ? "Added to Favorites" : "Add to Favorites"}
-              </Button>
-            </div>
+          <p className="text-xl font-semibold mb-4">${product.price.toFixed(2)}</p>
+          <p className="text-gray-600 mb-6">{product.description}</p>
+
+          <div className="flex items-center gap-4 mb-6">
+            <Button variant="outline" onClick={decreaseQty}>
+              <Minus />
+            </Button>
+            <span className="text-lg">{quantity}</span>
+            <Button variant="outline" onClick={increaseQty}>
+              <Plus />
+            </Button>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <Button onClick={handleAddToCart}>
+              <ShoppingCart className="mr-2" /> Add to Cart
+            </Button>
+            <Button variant="ghost">
+              <Heart />
+            </Button>
           </div>
         </div>
-      </main>
+      </div>
       <Footer />
-    </div>
+    </>
   );
 };
 

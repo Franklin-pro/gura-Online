@@ -8,27 +8,32 @@ import { Globe } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { toast } from "@/hooks/use-toast";
+import axios from "axios";
 
 export default function ForgotPassword() {
-  const [email, setEmail] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [email, setEmail] = useState('');
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsSubmitting(true);
-    
-    // Simulate API call for password reset
-    setTimeout(() => {
-      console.log({ email });
-      toast({
-        title: "Reset email sent",
-        description: "Please check your inbox for password reset instructions.",
-      });
-      setIsSubmitting(false);
-      // In a real app, you wouldn't navigate away immediately
-      // navigate("/login");
-    }, 1500);
+    setIsLoading(true);
+    setError('');
+    setMessage('');
+
+    try {
+      const response = await axios.post('https://gura-online-bn.onrender.com/api/v1/auth/forgot-password', { email });
+      setMessage(response.data.message);
+    } catch (err) {
+      if(err.status === 404){
+setError('email does not exist check again');
+      }
+      
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -55,15 +60,18 @@ export default function ForgotPassword() {
                     required
                     className="h-12"
                   />
+                  {error && <p className="text-sm text-red-500">{error}</p>}
+                  {message && <p className="text-sm text-green-500">{message}</p>}
                 </div>
 
                 <Button 
                   type="submit" 
                   className="w-full bg-red-600 hover:bg-red-700 h-12 text-base"
-                  disabled={isSubmitting}
+                  disabled={isLoading}
                 >
-                  {isSubmitting ? "Submitting..." : "Submit"}
+                  {isLoading ? "Submitting..." : "Submit"}
                 </Button>
+
 
                 <div className="relative my-4">
                   <div className="absolute inset-0 flex items-center">

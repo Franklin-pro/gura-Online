@@ -28,6 +28,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
     addToFavorites(product);
     toast.success("Added to favorites");
   };
+    if (!product || !product._id) return null;
 
   return (
     <Card className="relative overflow-hidden group border border-gray-200">
@@ -40,7 +41,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
         </button>
       </div>
       
-      <Link to={`/product/${product.id}`} className="block">
+      <Link to={`/product/${product._id}`} className="block">
         <div className="bg-gray-50 p-4 flex items-center justify-center h-40 md:h-48">
           <img 
             src={product.image} 
@@ -68,7 +69,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
                 />
               ))}
             </div>
-            <span className="text-xs text-gray-500 ml-1">({product.reviews})</span>
+            <span className="text-xs text-gray-500 ml-1">({product.rating})</span>
           </div>
           
           <button 

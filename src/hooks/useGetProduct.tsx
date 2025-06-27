@@ -5,7 +5,7 @@ const useGetProducts = () => {
     
 const getProducts = async () => {
   try {
-    const response = await fetch("/api/v1/products/featured", {
+    const response = await fetch("https://gura-online-bn.onrender.com/api/v1/products/featured", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
