@@ -1,32 +1,105 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Trash2, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { useShop } from "@/context/ShopContext";
 import { toast } from "@/components/ui/sonner";
 import Checkout from "@/components/Checkout";
+import axios from "axios";
+
+interface CartItem {
+  id: number;
+  productId: number;
+  name: string;
+  price: number;
+  quantity: number;
+  image: string;
+}
 
 const Cart = () => {
-  const { cartItems, removeFromCart, clearCart } = useShop();
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [showCheckout, setShowCheckout] = useState(false);
+  
+  useEffect(() => {
+    const fetchCartItems = async () => {
+      try {
+        const response = await axios.get("https://gura-online-bn.onrender.com/api/v1/carts",{
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+        setCartItems(response.data.data || []);
+      } catch (err) {
+        setError("Failed to fetch cart items");
+        toast.error("Failed to load your cart");
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchCartItems();
+  }, []);
   
   const totalPrice = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
   
-  const handleRemove = (id: number) => {
-    removeFromCart(id);
-    toast.success("Item removed from cart");
+  const handleRemove = async (id: number) => {
+    try {
+      await axios.delete(`https://gura-online-bn.onrender.com/api/v1/carts/${id}`);
+      setCartItems(cartItems.filter(item => item.id !== id));
+      toast.success("Item removed from cart");
+    } catch (err) {
+      toast.error("Failed to remove item");
+    }
   };
   
-  const handleClear = () => {
-    clearCart();
-    toast.success("Cart cleared");
+  const handleClear = async () => {
+    try {
+      await axios.delete("https://gura-online-bn.onrender.com/api/v1/carts");
+      setCartItems([]);
+      toast.success("Cart cleared");
+    } catch (err) {
+      toast.error("Failed to clear cart");
+    }
   };
   
   if (showCheckout) {
     return <Checkout onBack={() => setShowCheckout(false)} />;
+  }
+  
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <main className="flex-1 container mx-auto px-4 py-8">
+          <h1 className="text-2xl font-bold mb-6">Your Shopping Cart</h1>
+          <div className="text-center py-16">
+            <p>Loading your cart...</p>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+  
+  if (error) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <main className="flex-1 container mx-auto px-4 py-8">
+          <h1 className="text-2xl font-bold mb-6">Your Shopping Cart</h1>
+          <div className="text-center py-16">
+            <p className="text-red-500">{error}</p>
+            <Button onClick={() => window.location.reload()} className="mt-4">
+              Try Again
+            </Button>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
   }
   
   if (cartItems.length === 0) {
@@ -60,7 +133,14 @@ const Cart = () => {
             {cartItems.map(item => (
               <div key={item.id} className="flex gap-4 border rounded-lg p-4">
                 <div className="h-24 w-24 bg-gray-50 flex items-center justify-center rounded-md flex-shrink-0">
-                  <img src={item.image} alt={item.name} className="max-h-full max-w-full object-contain" />
+                  <img 
+                    src={item.image} 
+                    alt={item.name} 
+                    className="max-h-full max-w-full object-contain" 
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = 'https://via.placeholder.com/100';
+                    }}
+                  />
                 </div>
                 
                 <div className="flex-1">

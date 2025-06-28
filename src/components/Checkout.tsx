@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -10,7 +9,7 @@ interface CheckoutProps {
 }
 
 const Checkout = ({ onBack }: CheckoutProps) => {
-  const [activeStep, setActiveStep] = useState("shipping");
+  const [activeStep, setActiveStep] = useState<"shipping" | "payment">("shipping");
   const { cartItems, clearCart } = useShop();
 
   const totalPrice = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -18,39 +17,32 @@ const Checkout = ({ onBack }: CheckoutProps) => {
   const handlePaymentComplete = (paymentMethod: "stripe" | "mobile" | "cash") => {
     console.log(`Payment completed using ${paymentMethod}`);
     clearCart();
-    // Here you would typically redirect to a success page or show a success message
     alert("Payment successful! Thank you for your order.");
+    // You can redirect to a success page here if you want.
   };
 
   return (
     <div className="container mx-auto px-4 py-8">
       {onBack && (
-        <Button 
-          variant="ghost" 
-          className="mb-4 pl-1"
-          onClick={onBack}
-        >
+        <Button variant="ghost" className="mb-4 pl-1" onClick={onBack}>
           <ArrowLeft className="mr-1 h-4 w-4" /> Back
         </Button>
       )}
+
       <h1 className="text-2xl md:text-3xl font-bold mb-8">Checkout</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Main checkout area */}
+        {/* Main Checkout Area */}
         <div className="lg:col-span-2">
           <div className="mb-8 flex">
             <button
-              className={`flex-1 py-3 font-medium border-b-2 ${
-                activeStep === "shipping" ? "border-red-600 text-red-600" : "border-gray-300"
-              }`}
+              className={`flex-1 py-3 font-medium border-b-2 ${activeStep === "shipping" ? "border-red-600 text-red-600" : "border-gray-300"}`}
               onClick={() => setActiveStep("shipping")}
             >
               Shipping
             </button>
             <button
-              className={`flex-1 py-3 font-medium border-b-2 ${
-                activeStep === "payment" ? "border-red-600 text-red-600" : "border-gray-300"
-              }`}
+              className={`flex-1 py-3 font-medium border-b-2 ${activeStep === "payment" ? "border-red-600 text-red-600" : "border-gray-300"}`}
               onClick={() => setActiveStep("payment")}
             >
               Payment
@@ -141,7 +133,7 @@ const Checkout = ({ onBack }: CheckoutProps) => {
                 </div>
               </div>
 
-              <Button 
+              <Button
                 className="w-full bg-red-600 hover:bg-red-700"
                 onClick={() => setActiveStep("payment")}
               >
@@ -151,14 +143,14 @@ const Checkout = ({ onBack }: CheckoutProps) => {
           )}
 
           {activeStep === "payment" && (
-            <PaymentForm 
-              total={totalPrice} 
-              onComplete={handlePaymentComplete} 
+            <PaymentForm
+              total={totalPrice}
+              onComplete={handlePaymentComplete}
             />
           )}
         </div>
 
-        {/* Order Summary sidebar */}
+        {/* Order Summary Sidebar */}
         <div className="bg-gray-50 p-6 rounded-lg h-fit">
           <h2 className="text-lg font-bold mb-4">Order Summary</h2>
 
@@ -166,7 +158,11 @@ const Checkout = ({ onBack }: CheckoutProps) => {
             {cartItems.map(item => (
               <div key={item.id} className="flex gap-3">
                 <div className="h-16 w-16 bg-white rounded flex items-center justify-center relative">
-                  <img src={item.image} alt={item.name} className="max-h-full max-w-full object-contain" />
+                  <img
+                    src={item.image}
+                    alt={item.name}
+                    className="max-h-full max-w-full object-contain"
+                  />
                   <span className="absolute -top-2 -right-2 h-5 w-5 bg-gray-200 rounded-full text-xs flex items-center justify-center">
                     {item.quantity}
                   </span>
