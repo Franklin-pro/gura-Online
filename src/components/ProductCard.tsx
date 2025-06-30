@@ -21,8 +21,6 @@ const ProductCard = ({ product }: ProductCardProps) => {
   useEffect(() => {
     const checkToken = () => {
       const token = localStorage.getItem('token');
-      console.log('Token check result:', token ? 'Token exists' : 'No token found');
-      console.log('Token value:', token); // Remove this in production
       setIsTokenReady(!!token);
     };
     
@@ -80,9 +78,11 @@ const ProductCard = ({ product }: ProductCardProps) => {
           }
         }
       );
-
+if(response.status === 201) {
+      toast.success('added to cart')
       console.log('Response status:', response.status);
       console.log('Response data:', response.data);
+}
 
       if (response.status >= 400) {
         throw new Error(response.data.message || "Failed to add to cart");

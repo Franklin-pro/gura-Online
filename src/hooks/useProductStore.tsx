@@ -25,6 +25,7 @@ interface Product {
     toggleFeaturedProduct: (productId: string) => Promise<void>;
     fetchFeaturedProducts: () => Promise<void>;
 	fetchSingleProduct: (productId: string) => Promise<Product | null>;
+	addCart: (productId:string,quantity:number) => Promise<void>;
   }
 
 export const useProductStore = create<ProductStore>((set) => ({
@@ -61,7 +62,6 @@ fetchSingleProduct: async (productId:string) => {
   try {
     const response = await axios.get(`https://gura-online-bn.onrender.com/api/v1/products/${productId}`);
     set({ loading: false });
-	console.log("Fetched product:", response.data.data);
     return response.data.data;
   } catch (error) {
     set({ error: "Failed to fetch product", loading: false });
@@ -119,4 +119,27 @@ fetchSingleProduct: async (productId:string) => {
 			console.log("Error fetching featured products:", error);
 		}
 	},
+addCart: async (productId, quantity = 1) => {
+  try {
+    const response = await axios.post(
+      `https://gura-online-bn.onrender.com/api/v1/carts`,
+      {
+        productId,
+        quantity,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+
+    console.log(response.data.data);
+    toast.success("Product added to cart");
+  } catch (error) {
+    console.error(error);
+    toast.error(error.response?.data?.error || "Failed to add product to cart");
+  }
+},
+
 }));

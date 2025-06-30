@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Trash2, ChevronRight } from "lucide-react";
+import { Trash2, ChevronRight, Loader } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import Header from "@/components/Header";
@@ -22,9 +22,9 @@ const Cart = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showCheckout, setShowCheckout] = useState(false);
-  
-  useEffect(() => {
-    const fetchCartItems = async () => {
+  const [cartQuantity, setCartQuantity] = useState(0);
+
+      const fetchCartItems = async () => {
       try {
         const response = await axios.get("https://gura-online-bn.onrender.com/api/v1/carts",{
           headers: {
@@ -39,25 +39,43 @@ const Cart = () => {
         setLoading(false);
       }
     };
+  
+  useEffect(() => {
     
     fetchCartItems();
   }, []);
   
   const totalPrice = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
   
-  const handleRemove = async (id: number) => {
-    try {
-      await axios.delete(`https://gura-online-bn.onrender.com/api/v1/carts/${id}`);
-      setCartItems(cartItems.filter(item => item.id !== id));
-      toast.success("Item removed from cart");
-    } catch (err) {
-      toast.error("Failed to remove item");
-    }
-  };
+const handleRemove = async (id: string) => { // Make sure id is string type
+  try {
+    const response = await axios.delete(`https://gura-online-bn.onrender.com/api/v1/carts/${id}`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      }
+    });
+
+    // Use _id for comparison since that's what MongoDB uses
+    setCartItems(cartItems.filter(item => item._id !== id));
+    toast.success(response.data.message);
+    
+    // Optional: Refresh cart data
+    fetchCartItems();
+    setLoading(true);
+    
+  } catch (err) {
+    toast.error("Failed to remove item");
+    console.error("Delete error:", err);
+  }
+};
   
   const handleClear = async () => {
     try {
-      await axios.delete("https://gura-online-bn.onrender.com/api/v1/carts");
+      await axios.delete("https://gura-online-bn.onrender.com/api/v1/carts",{
+        headers:{
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        }
+      });
       setCartItems([]);
       toast.success("Cart cleared");
     } catch (err) {
@@ -75,8 +93,8 @@ const Cart = () => {
         <Header />
         <main className="flex-1 container mx-auto px-4 py-8">
           <h1 className="text-2xl font-bold mb-6">Your Shopping Cart</h1>
-          <div className="text-center py-16">
-            <p>Loading your cart...</p>
+          <div className="text-center text-red-500 font-bold py-16">
+            <p><Loader className="w-10 h-10  border-gray-300 border-t-primary rounded-full animate-spin"/>Loading your cart...</p>
           </div>
         </main>
         <Footer />

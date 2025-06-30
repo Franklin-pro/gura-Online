@@ -10,6 +10,7 @@ import {
   Settings,
   Package,
   LogOut,
+  User2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,7 +30,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import useLogin from "@/hooks/useLogin";
-
+import axios from "axios";
+import { toast } from "react-hot-toast";
 
 // Categories
 const categories = [
@@ -47,17 +49,22 @@ export default function Header() {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const {logout,loading} = useLogin()
+  const [cartQuantity, setCartQuantity] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const { logout } = useLogin();
 
   const isMobile = useIsMobile();
-  const { getCartQuantity } = useShop();
-  const cartQuantity = getCartQuantity();
   const navigate = useNavigate();
 
-  // Simulate checking login status (e.g., token in localStorage)
+  // Check login status and fetch cart items
   useEffect(() => {
     const token = localStorage.getItem("token");
     setIsLoggedIn(!!token);
+    
+    if (token) {
+      fetchCartItems();
+    }
   }, []);
 
   const handleSearch = (e: React.FormEvent) => {
@@ -68,9 +75,32 @@ export default function Header() {
     }
   };
 
+  const fetchCartItems = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get("https://gura-online-bn.onrender.com/api/v1/carts", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      // Calculate total quantity from all cart items
+      const totalQuantity = response.data.data.reduce(
+        (sum: number, item) => sum + item.quantity, 
+        0
+      );
+      setCartQuantity(totalQuantity);
+    } catch (err) {
+      setError("Failed to fetch cart items");
+      toast.error("Failed to load your cart");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleLogout = () => {
     logout();
     setIsLoggedIn(false);
+    setCartQuantity(0); // Reset cart quantity on logout
     navigate("/login");
   };
 
@@ -101,9 +131,8 @@ export default function Header() {
             <DropdownMenu>
               <DropdownMenuTrigger className="focus:outline-none">
                 <Avatar className="h-8 w-8 hover:ring-2 hover:ring-offset-2 hover:ring-gray-200 transition-all">
-                  <AvatarImage src="/placeholder.svg" />
                   <AvatarFallback>
-                    <User className="h-4 w-4" />
+                    <User2/>
                   </AvatarFallback>
                 </Avatar>
               </DropdownMenuTrigger>
@@ -244,7 +273,7 @@ export default function Header() {
           </Link>
           <Link to="/cart" className="flex items-center gap-2 py-2 px-3 hover:bg-gray-100 rounded-md">
             <ShoppingCart className="h-5 w-5" />
-            <span>Cart</span>
+            <span>Cart ({cartQuantity})</span>
           </Link>
         </div>
       </div>
