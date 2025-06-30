@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { Heart, Minus, Plus, ShoppingCart, Star } from "lucide-react";
+import { Heart, Loader, Minus, Plus, ShoppingCart, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -12,6 +12,23 @@ const ProductDetails = () => {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
+  const [isTokenReady, setIsTokenReady] = useState(false);
+
+    useEffect(() => {
+    const checkToken = () => {
+      const token = localStorage.getItem('token');
+      setIsTokenReady(!!token);
+    };
+    
+    checkToken();
+    
+    // Listen for storage changes (in case token is set in another tab)
+    window.addEventListener('storage', checkToken);
+    
+    return () => {
+      window.removeEventListener('storage', checkToken);
+    };
+  }, []);
 
   useEffect(() => {
  const fetchProduct = async () => {
@@ -27,15 +44,23 @@ const ProductDetails = () => {
   }
   }, [id]);
 
-  const handleAddToCart = () => {
-    // Add cart logic here
-    toast.success(`${product.name} added to cart!`);
-  };
+const handleAddToCart = () => {
+  if (!isTokenReady) {
+    toast.error("You need to be logged in to add items to the cart");
+    return;
+  }
+
+  useProductStore.getState().addCart(product._id, quantity);
+};
+
 
   const increaseQty = () => setQuantity((prev) => prev + 1);
   const decreaseQty = () => setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
 
-  if (loading) return <div className="text-center py-10">Loading...</div>;
+  if (loading) return <div className="text-lg spinner text-red-500 flex items-center gap-3"> 
+            <Loader className="w-10 h-10  border-gray-300 border-t-primary rounded-full animate-spin"/>
+          <p className="font-bold">product Details...</p>
+          </div>;
   if (!product) return <div className="text-center py-10">Product not found.</div>;
 
   return (
@@ -74,8 +99,8 @@ const ProductDetails = () => {
           </div>
 
           <div className="flex items-center gap-4">
-            <Button onClick={handleAddToCart}>
-              <ShoppingCart className="mr-2" /> Add to Cart
+            <Button onClick={handleAddToCart}  disabled={!isTokenReady}>
+              <ShoppingCart className="mr-2" /> {isTokenReady ? 'Add to Cart' : 'Login Required'}
             </Button>
             <Button variant="ghost">
               <Heart />

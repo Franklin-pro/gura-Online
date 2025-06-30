@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import ProductCard from "./ProductCard";
@@ -9,9 +9,10 @@ import { Link } from "react-router-dom";
 export default function ExploreProducts() {
   const isMobile = useIsMobile();
   const [visibleProducts, setVisibleProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   const fetchAllProducts = useProductStore((state) => state.fetchAllProducts);
   const allProducts = useProductStore((state) => state.products);
-
 
   const [startIndex, setStartIndex] = useState(0);
   const productsPerRow = isMobile ? 2 : 4;
@@ -20,7 +21,13 @@ export default function ExploreProducts() {
 
   // Fetch all products on component mount
   useEffect(() => {
-    fetchAllProducts();
+    const loadProducts = async () => {
+      setLoading(true);
+      await fetchAllProducts(); // Make sure this returns a promise in your store
+      setLoading(false);
+    };
+
+    loadProducts();
   }, [fetchAllProducts]);
 
   // Update visible products when dependencies change
@@ -42,6 +49,25 @@ export default function ExploreProducts() {
     );
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center text-red-500 justify-center h-64">
+        <Loader className="w-10 h-10 text-primary text-red-500 animate-spin" />
+        <span className="ml-3 text-lg font-bold">Loading products...</span>
+      </div>
+    );
+  }
+
+  if (visibleProducts.length === 0) {
+    return (
+      <section className="py-10 container mx-auto px-4">
+        <div className="flex justify-center items-center h-64">
+          <p className="text-lg">No products available at the moment.</p>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="py-10 container mx-auto px-4">
       <div className="flex items-center justify-between mb-6">
@@ -49,7 +75,6 @@ export default function ExploreProducts() {
           <div className="w-4 h-8 bg-red-600 rounded-sm"></div>
           <h2 className="text-2xl font-bold">Explore Our Products</h2>
         </div>
-
         <div className="flex gap-2">
           <button
             onClick={prevSlide}

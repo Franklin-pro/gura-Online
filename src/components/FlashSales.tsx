@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Heart, ShoppingCart, ChevronLeft, ChevronRight, Star } from "lucide-react";
+import { Heart, ShoppingCart, ChevronLeft, ChevronRight, Star, Loader } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import useGetProducts from "@/hooks/useGetProduct";
@@ -114,8 +114,11 @@ export default function FlashSales() {
   if (loading) {
     return (
       <section className="py-10 container mx-auto px-4">
-        <div className="flex justify-center items-center h-64">
-          <p className="text-lg spinner">Loading flash sale products...</p>
+        <div className="flex justify-center text-red-500 items-center h-64">
+          <p className="text-lg spinner flex items-center gap-3"> 
+            <Loader className="w-10 h-10  border-gray-300 border-t-primary rounded-full animate-spin"/>
+          <p className="font-bold">Loading flash sale products...</p>
+          </p>
         </div>
       </section>
     );
@@ -138,8 +141,8 @@ export default function FlashSales() {
         <div className="flex items-center gap-4">
           <div className="w-4 h-8 bg-red-600 rounded-sm"></div>
           <h2 className="text-2xl font-bold">Featured Products</h2>
+          
         </div>
-        
         <div className="flex items-center gap-4">
           <div className="flex gap-2">
             <div className="bg-gray-900 text-white rounded-md px-2 py-1 flex items-center justify-center text-sm md:text-base">
