@@ -15,7 +15,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import NotFound from "./pages/NotFound";
 import { ShopProvider } from "./context/ShopContext";
 import Profile from "./pages/Profile";
-import PaymentSuccess from "./pages/PaymentSuccess";
+import PaymentSuccess from "./pages/payment-success";
 import AdminLayout from "./pages/admin/DashboardLayout";
 import Dashboard from "./pages/admin/Dashboard";
 import AdminProducts from "./pages/admin/products/ListProducts";
