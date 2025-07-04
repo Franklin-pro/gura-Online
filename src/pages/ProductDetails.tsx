@@ -6,6 +6,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { toast } from "@/components/ui/sonner";
 import { useProductStore } from "@/hooks/useProductStore";
+import axios from "axios";
 
 const ProductDetails = () => {
   const { id } = useParams();
@@ -13,16 +14,16 @@ const ProductDetails = () => {
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const [isTokenReady, setIsTokenReady] = useState(false);
+  const [userRating, setUserRating] = useState(0);
+  const [isRating, setIsRating] = useState(false);
 
-    useEffect(() => {
+  useEffect(() => {
     const checkToken = () => {
       const token = localStorage.getItem('token');
       setIsTokenReady(!!token);
     };
     
     checkToken();
-    
-    // Listen for storage changes (in case token is set in another tab)
     window.addEventListener('storage', checkToken);
     
     return () => {
@@ -31,36 +32,101 @@ const ProductDetails = () => {
   }, []);
 
   useEffect(() => {
- const fetchProduct = async () => {
-    const data = await useProductStore.getState().fetchSingleProduct(id);
-    if (data) {
-      setProduct(data);
+    const fetchProduct = async () => {
+      try {
+        const data = await useProductStore.getState().fetchSingleProduct(id);
+        if (data) {
+          setProduct(data);
+          // Check if user has already rated this product
+          // if (isTokenReady) {
+          //   checkUserRating(data._id);
+          // }
+        }
+      } catch (error) {
+        console.error('Error fetching product:', error);
+        toast.error('Failed to load product details');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchProduct();
     }
-    setLoading(false);
+  }, [id, isTokenReady]);
+
+  // const checkUserRating = async (productId) => {
+  //   try {
+  //     const response = await axios.get(`/api/v1/products/${productId}/user-rating`, {
+  //       headers: {
+  //         Authorization: `Bearer ${localStorage.getItem("token")}`,
+  //       },
+  //     });
+  //     if (response.data.rating) {
+  //       setUserRating(response.data.rating);
+  //     }
+  //   } catch (error) {
+  //     console.error('Error checking user rating:', error);
+  //   }
+  // };
+
+  const handleAddToCart = () => {
+    if (!isTokenReady) {
+      toast.error("You need to be logged in to add items to the cart");
+      return;
+    }
+    useProductStore.getState().addCart(product._id, quantity);
+    toast.success("Product added to cart");
   };
 
-  if (id) {
-    fetchProduct();
-  }
-  }, [id]);
-
-const handleAddToCart = () => {
+const handleAddRate = async (rating: number) => {
   if (!isTokenReady) {
-    toast.error("You need to be logged in to add items to the cart");
+    toast.error("You need to be logged in to rate products");
     return;
   }
 
-  useProductStore.getState().addCart(product._id, quantity);
+  if (isRating) return;
+  
+  setIsRating(true);
+  try {
+    const response = await axios.post(
+      `/api/v1/products/${product._id}/rate`,
+      { rating },
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+    
+    if (response.data.success) {
+      toast.success(response.data.message);
+      setProduct(prev => ({
+        ...prev,
+        rating: response.data.data.newAverageRating,
+        ratingCount: response.data.data.newRatingCount,
+        reviews: response.data.data.reviews || prev.reviews
+      }));
+      setUserRating(rating);
+    }
+  } catch (error) {
+    console.error("Error adding rating:", error);
+    toast.error(error.response?.data?.message || "Failed to add rating");
+  } finally {
+    setIsRating(false);
+  }
 };
-
 
   const increaseQty = () => setQuantity((prev) => prev + 1);
   const decreaseQty = () => setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
 
-  if (loading) return <div className="text-lg spinner text-red-500 flex items-center gap-3"> 
-            <Loader className="w-10 h-10  border-gray-300 border-t-primary rounded-full animate-spin"/>
-          <p className="font-bold">product Details...</p>
-          </div>;
+  if (loading) return (
+    <div className="text-lg spinner text-red-500 flex items-center gap-3"> 
+      <Loader className="w-10 h-10 border-gray-300 border-t-primary rounded-full animate-spin"/>
+      <p className="font-bold">Loading product details...</p>
+    </div>
+  );
+
   if (!product) return <div className="text-center py-10">Product not found.</div>;
 
   return (
@@ -74,16 +140,29 @@ const handleAddToCart = () => {
         />
         <div>
           <h1 className="text-3xl font-bold mb-2">{product.name}</h1>
-          <div className="flex items-center gap-2 mb-4 text-yellow-500">
-            {[...Array(5)].map((_, i) => (
-              <Star
-                key={i}
-                fill={i < Math.floor(product.rating) ? "currentColor" : "none"}
-                stroke="currentColor"
-                className="w-5 h-5"
-              />
-            ))}
-            <span className="text-sm text-gray-500">({product.rating})</span>
+          <div className="flex items-center gap-2 mb-4">
+            <div className="flex text-yellow-500">
+              {[...Array(5)].map((_, i) => (
+                <Star
+                  key={i}
+                  fill={
+                    (userRating > 0 && i < userRating) || 
+                    (userRating === 0 && i < Math.floor(product.rating)) ? 
+                    "currentColor" : "none"
+                  }
+                  stroke="currentColor"
+                  className="w-5 h-5"
+                  onClick={() => handleAddRate(i + 1)}
+                  style={{ 
+                    cursor: isTokenReady && !isRating ? 'pointer' : 'default',
+                    opacity: isRating ? 0.7 : 1
+                  }}
+                />
+              ))}
+            </div>
+            <span className="text-sm text-gray-500">
+              ({product.rating?.toFixed(1) || '0.0'} • {product.ratingCount || 0} ratings)
+            </span>
           </div>
           <p className="text-xl font-semibold mb-4">${product.price.toFixed(2)}</p>
           <p className="text-gray-600 mb-6">{product.description}</p>
@@ -99,10 +178,15 @@ const handleAddToCart = () => {
           </div>
 
           <div className="flex items-center gap-4">
-            <Button onClick={handleAddToCart}  disabled={!isTokenReady}>
-              <ShoppingCart className="mr-2" /> {isTokenReady ? 'Add to Cart' : 'Login Required'}
+            <Button 
+              onClick={handleAddToCart}  
+              disabled={!isTokenReady}
+              className="flex items-center"
+            >
+              <ShoppingCart className="mr-2" /> 
+              {isTokenReady ? 'Add to Cart' : 'Login Required'}
             </Button>
-            <Button variant="ghost">
+            <Button variant="ghost" aria-label="Add to wishlist">
               <Heart />
             </Button>
           </div>

@@ -49,7 +49,7 @@ export default function CategoryBrowser() {
   };
   
   return (
-    <section className="py-10 container mx-auto px-4">
+    <section className="py-10 container max-sm:hidden mx-auto px-4">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-4">
           <div className="w-4 h-8 bg-red-600 rounded-sm"></div>
@@ -74,7 +74,7 @@ export default function CategoryBrowser() {
         </div>
       </div>
       
-      <div className="grid grid-cols-5 md:grid-cols-6 gap-4">
+      <div className="grid grid-cols-5 md:grid-cols-6  gap-4">
         {visibleCategories.map((category, index) => (
           <Link 
             key={index} 

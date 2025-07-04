@@ -3,13 +3,18 @@ import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 export interface Product {
   id: number;
-  _id?: string; // Optional for compatibility with existing products
+  _id?: string;
   name: string;
   image: string;
   price: number;
-  rating: number;
-  reviews: number;
+  discount?: number;
   description?: string;
+  reviews: {
+    userId: string;
+    rating: number;
+    comment?: string;
+    createdAt?: string;
+  }[];
 }
 
 interface CartItem extends Product {
