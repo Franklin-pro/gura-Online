@@ -22,20 +22,19 @@ export default function BestSelling() {
   useEffect(() => {
     const loadProducts = async () => {
       setLoading(true);
-      await fetchAllProducts(); // Make sure your store returns a promise
+      await fetchAllProducts();
       setLoading(false);
     };
 
     loadProducts();
   }, [fetchAllProducts]);
 
-  // ✅ Filter products when fetched
+  // ✅ Filter products by highest rating when fetched
   useEffect(() => {
-    const filtered = allProducts.filter(
-      (product) => product.price >= 120 && product.price <= 300
-    );
-    setFilteredProducts(filtered);
-    setVisibleProducts(filtered.slice(startIndex, startIndex + productsToShow));
+    // Sort products by rating in descending order
+    const sortedByRating = [...allProducts].sort((a, b) => b.rating - a.rating);
+    setFilteredProducts(sortedByRating);
+    setVisibleProducts(sortedByRating.slice(startIndex, startIndex + productsToShow));
   }, [allProducts, startIndex, productsToShow]);
 
   const nextSlide = () => {
@@ -63,7 +62,7 @@ export default function BestSelling() {
     return (
       <section className="py-10 container mx-auto px-4">
         <div className="flex justify-center items-center h-64">
-          <p className="text-lg">No products available in this price range.</p>
+          <p className="text-lg">No products available.</p>
         </div>
       </section>
     );
@@ -74,7 +73,7 @@ export default function BestSelling() {
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-4">
           <div className="w-4 h-8 bg-red-600 rounded-sm"></div>
-          <h2 className="text-2xl font-bold">Best Selling Products</h2>
+          <h2 className="text-2xl font-bold">Highest Rated Products</h2>
         </div>
 
         <div className="flex gap-2">
@@ -100,9 +99,7 @@ export default function BestSelling() {
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
         {visibleProducts.map((product) => (
-
           <Card key={product._id} className="relative overflow-hidden group border border-gray-200">
-            <span className="p-4 bg-red-500 text-center text-white">discount {product.discount}</span>
             <div className="absolute top-2 right-2 z-10 flex flex-col gap-2">
               <button className="h-8 w-8 rounded-full bg-white shadow-md flex items-center justify-center text-gray-700 hover:text-red-600 transition-colors">
                 <Heart className="h-4 w-4" />
@@ -136,7 +133,7 @@ export default function BestSelling() {
                     />
                   ))}
                 </div>
-                <span className="text-xs text-gray-500 ml-1">({product.reviews})</span>
+                <span className="text-xs text-gray-500 ml-1">({product.reviews.length})</span>
               </div>
             </div>
           </Card>

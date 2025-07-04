@@ -7,6 +7,7 @@ import Footer from "@/components/Footer";
 import { toast } from "@/components/ui/sonner";
 import Checkout from "@/components/Checkout";
 import axios from "axios";
+import {loadStripe} from "@stripe/stripe-js";
 
 interface CartItem {
   id: number;
@@ -16,6 +17,8 @@ interface CartItem {
   quantity: number;
   image: string;
 }
+
+const stripePromise = loadStripe("pk_test_51PWDtVACBJNi3q8ryB7BJr0zXmsCZnyoHgnaOnAVtJ4qYRpTAS0kUZtFLmlDZajE8BJpwCnu53WS1UpUlJhIuATs00MWAIo7bP");
 
 const Cart = () => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
@@ -47,6 +50,36 @@ const Cart = () => {
   
   const totalPrice = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
   
+const handleCheckout = async () => {
+  const stripe = await stripePromise;
+
+  try {
+    const response = await axios.post("/api/v1/payments/create-checkout-session", {
+      products: cartItems,
+    }, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+
+    const sessionId = response.data.id; // ✅ Correct
+
+    if (stripe) {
+      const result = await stripe.redirectToCheckout({ sessionId }); // ✅ Correct
+
+      if (result.error) {
+        toast.error(result.error.message || "Stripe redirect failed");
+      }
+    } else {
+      toast.error("Stripe failed to load.");
+    }
+  } catch (err) {
+    toast.error("Checkout failed. Please try again.");
+    console.error("Checkout error:", err);
+  }
+};
+
+
 const handleRemove = async (id: string) => { // Make sure id is string type
   try {
     const response = await axios.delete(`https://gura-online-bn.onrender.com/api/v1/carts/${id}`, {
@@ -207,7 +240,9 @@ const handleRemove = async (id: string) => { // Make sure id is string type
             
             <Button 
               className="w-full bg-red-600 hover:bg-red-700 mb-4"
-              onClick={() => setShowCheckout(true)}
+              onClick={handleCheckout}
+              disabled={cartItems.length === 0}
+
             >
               Proceed to Checkout
             </Button>

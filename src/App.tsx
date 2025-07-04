@@ -15,7 +15,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import NotFound from "./pages/NotFound";
 import { ShopProvider } from "./context/ShopContext";
 import Profile from "./pages/Profile";
-import PaymentSuccess from "./pages/PaymentSuccess";
+import PaymentSuccess from "./pages/payment-success";
 import AdminLayout from "./pages/admin/DashboardLayout";
 import Dashboard from "./pages/admin/Dashboard";
 import AdminProducts from "./pages/admin/products/ListProducts";
@@ -24,6 +24,7 @@ import Orders from "./pages/admin/orders";
 import Customers from "./pages/admin/customers";
 import PrivateRoute from "./components/PrivateRoutes";
 import ResetPassword from "./pages/ResetPassword";
+import OrderDetails from "./pages/OrderDetails";
 
 const queryClient = new QueryClient();
 
@@ -39,6 +40,7 @@ const App = () => (
             <Route path="/cart" element={<PrivateRoute><Cart /></PrivateRoute>} />
             <Route path="/favorites" element={<PrivateRoute><Favorites /></PrivateRoute>} />
             <Route path="/product/:id" element={<ProductDetails />} />
+            <Route path="/orders/:orderId" element={<OrderDetails />} />
             <Route path="/category/:categoryName" element={<CategoryPage />} />
             <Route path="/shop" element={<Shop />} />
             <Route path="/login" element={<Login />} />

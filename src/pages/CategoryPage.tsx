@@ -16,11 +16,28 @@ const CategoryPage = () => {
   } = useProductStore();
 
   const [showFilters, setShowFilters] = useState(false);
+  const [localLoading, setLocalLoading] = useState(false);
 
   useEffect(() => {
-    if (categoryName) {
-      fetchProductsByCategory(categoryName);
-    }
+    const loadProducts = async () => {
+      if (categoryName) {
+        try {
+          setLocalLoading(true);
+          // Clear current products before fetching new ones
+          useProductStore.setState({ products: [] });
+          await fetchProductsByCategory(categoryName);
+        } finally {
+          setLocalLoading(false);
+        }
+      }
+    };
+
+    loadProducts();
+
+    return () => {
+      // Cleanup function to reset products when component unmounts
+      useProductStore.setState({ products: [] });
+    };
   }, [categoryName, fetchProductsByCategory]);
 
   // Function to format category name for display
@@ -90,7 +107,7 @@ const CategoryPage = () => {
           </div>
         )}
 
-        {loading ? (
+        {(loading || localLoading) ? (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
             {[...Array(8)].map((_, index) => (
               <div key={index} className="border rounded-md p-4">

@@ -16,8 +16,14 @@ interface ProductProps {
   category: string;
   discount: number;
   rating: number;
-  reviews: number;
+  reviews: {
+    user: any;
+    rating: number;
+    _id: string;
+    createdAt: string;
+  }[]; // ✅ Should be an array of review objects, not a number
 }
+
 
 export default function FlashSales() {
   const [countdown, setCountdown] = useState({
