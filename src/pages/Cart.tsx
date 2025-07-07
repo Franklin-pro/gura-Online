@@ -54,7 +54,7 @@ const handleCheckout = async () => {
   const stripe = await stripePromise;
 
   try {
-    const response = await axios.post("/api/v1/payments/create-checkout-session", {
+    const response = await axios.post("https://gura-online-bn.onrender.com/api/v1/payments/create-checkout-session", {
       products: cartItems,
     }, {
       headers: {
