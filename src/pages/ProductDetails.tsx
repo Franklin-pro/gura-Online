@@ -90,7 +90,7 @@ const handleAddRate = async (rating: number) => {
   setIsRating(true);
   try {
     const response = await axios.post(
-      `/api/v1/products/${product._id}/rate`,
+      `https://gura-online-bn.onrender.com/api/v1/products/${product._id}/rate`,
       { rating },
       {
         headers: {

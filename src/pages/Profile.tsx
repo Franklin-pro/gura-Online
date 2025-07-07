@@ -102,7 +102,7 @@ export default function Profile() {
   const fetchOrders = async (userId: string) => {
     try {
       setOrdersLoading(true);
-      const response = await axios.get(`/api/v1/orders/all`, {
+      const response = await axios.get(`https://gura-online-bn.onrender.com/api/v1/orders/all`, {
         params: {
           status: selectedTab === 'all' ? undefined : selectedTab,
         },
@@ -125,7 +125,7 @@ export default function Profile() {
 
   const handleCancelOrder = async (orderId: string) => {
     try {
-      await axios.put(`/api/v1/orders/${orderId}/cancel`, {}, {
+      await axios.put(`https://gura-online-bn.onrender.com/api/v1/orders/${orderId}/cancel`, {}, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`
         }

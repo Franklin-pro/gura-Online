@@ -94,7 +94,7 @@ export default function OrderDetails() {
   const fetchOrderDetails = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`/api/v1/orders/${orderId}`, {
+      const response = await axios.get(`https://gura-online-bn.onrender.com/api/v1/orders/${orderId}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`
         }
@@ -120,7 +120,7 @@ export default function OrderDetails() {
     try {
       setTrackingLoading(true);
       // In a real app, you'd call a tracking API here
-      const response = await axios.get(`/api/v1/orders/${orderId}/tracking`, {
+      const response = await axios.get(`https://gura-online-bn.onrender.com/api/v1/orders/${orderId}/tracking`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`
         }
@@ -196,7 +196,7 @@ export default function OrderDetails() {
     if (!order) return;
 
     try {
-      await axios.put(`/api/v1/orders/${order._id}/cancel`, {}, {
+      await axios.put(`https://gura-online-bn.onrender.com/api/v1/orders/${order._id}/cancel`, {}, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`
         }

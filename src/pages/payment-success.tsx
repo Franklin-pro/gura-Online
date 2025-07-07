@@ -32,7 +32,7 @@ export default function PaymentSuccess() {
 
         // Clear cart after successful payment
         try {
-          await axios.delete("/api/v1/carts", {
+          await axios.delete("https://gura-online-bn.onrender.com/api/v1/carts", {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
