@@ -17,7 +17,7 @@ export default function PaymentSuccess() {
     const handleCheckoutSuccess = async (sessionId) => {
       try {
         const response = await axios.post(
-          "/api/v1/payments/checkout-success",
+          "https://gura-online-bn.onrender.com/api/v1/payments/checkout-success",
           { sessionId },
           {
             headers: {
