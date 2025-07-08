@@ -104,7 +104,7 @@ const handleRemove = async (id: string) => { // Make sure id is string type
   
   const handleClear = async () => {
     try {
-      await axios.delete("https://gura-online-bn.onrender.com/api/v1/carts",{
+      await axios.delete("/api/v1/carts",{
         headers:{
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         }
