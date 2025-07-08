@@ -88,21 +88,12 @@ const handleCheckoutSuccess = async () => {
         console.error("Error clearing cart:", cartError);
         toast.warning("Order placed but couldn't clear your cart");
       }
-
-      // 4. Update local state
       setShowShippingForm(false);
-      
-      // 5. Optional: Redirect to order details after delay
-      setTimeout(() => {
-        window.location.href = `/profile/orders/${response.data.transactionId}`;
-      }, 3000);
     } else {
       throw new Error(response.data.message || "Payment verification failed");
     }
   } catch (err) {
     console.error("Payment processing error:", err);
-    
-    // Handle different error scenarios
     let errorMessage = "Payment verification failed. Please check your orders.";
     
     if (err.response) {
