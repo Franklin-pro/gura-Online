@@ -58,6 +58,7 @@ interface Order {
     state?: string;
     address?: string;
     country?: string;
+    phone?: string;
   };
   stripeSessionId?: string;
   trackingNumber?: string;
@@ -504,6 +505,7 @@ export default function OrderDetails() {
                       </p>
                     )}
                     {order.shippingAddress.country && <p>{order.shippingAddress.country}</p>}
+                     {order.shippingAddress.phone && <p className="font-bold">Phone Number : {order.shippingAddress.phone}</p>}
                   </div>
                 </CardContent>
               </Card>
