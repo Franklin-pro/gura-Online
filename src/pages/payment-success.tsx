@@ -41,56 +41,89 @@ export default function PaymentSuccess() {
     return true;
   };
 
-  const handleCheckoutSuccess = async () => {
-    if (!validateAddress()) return;
+const handleCheckoutSuccess = async () => {
+  if (!validateAddress()) return;
 
-    setIsProcessing(true);
-    try {
-      const response = await axios.post(
-        "https://gura-online-bn.onrender.com/api/v1/payments/checkout-success",
-        {
-          sessionId,
-           shippingAddress: { ...shippingAddress },
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
+  setIsProcessing(true);
+  setError(null); // Reset any previous errors
+
+  try {
+    // 1. Send payment confirmation to backend with shipping address
+    const response = await axios.post(
+      "https://gura-online-bn.onrender.com/api/v1/payments/checkout-success",
+      {
+        sessionId,
+        shippingAddress: {
+          name: shippingAddress.name.trim(),
+          address: shippingAddress.address.trim(),
+          city: shippingAddress.city.trim(),
+          state: shippingAddress.state.trim(),
+          zipCode: shippingAddress.zipCode.trim(),
+          country: shippingAddress.country.trim()
         }
-      );
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          "Content-Type": "application/json"
+        }
+      }
+    );
 
+    // 2. Handle successful response
+    if (response.data.success) {
       setTransactionId(response.data.transactionId);
       setAmountPaid(response.data.amountPaid);
-      toast.success("Payment successful!");
+      toast.success("Payment successful! Your order has been placed.");
 
-      // Clear cart
+      // 3. Clear the user's cart
       try {
         await axios.delete("https://gura-online-bn.onrender.com/api/v1/carts", {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
+            Authorization: `Bearer ${localStorage.getItem("token")}`
+          }
         });
-        toast.success("Cart cleared");
+        toast.success("Your cart has been cleared");
       } catch (cartError) {
         console.error("Error clearing cart:", cartError);
-        toast.warning("Payment succeeded but cart couldn't be cleared");
+        toast.warning("Order placed but couldn't clear your cart");
       }
 
+      // 4. Update local state
       setShowShippingForm(false);
-    } catch (err) {
-      console.error("Payment processing error:", err);
-      setError(
-        err.response?.data?.message ||
-          "Payment verification failed. Please check your orders."
-      );
-      toast.error(
-        err.response?.data?.message ||
-          "Payment verification failed. Please check your orders."
-      );
-    } finally {
-      setIsProcessing(false);
+      
+      // 5. Optional: Redirect to order details after delay
+      setTimeout(() => {
+        window.location.href = `/profile/orders/${response.data.transactionId}`;
+      }, 3000);
+    } else {
+      throw new Error(response.data.message || "Payment verification failed");
     }
-  };
+  } catch (err) {
+    console.error("Payment processing error:", err);
+    
+    // Handle different error scenarios
+    let errorMessage = "Payment verification failed. Please check your orders.";
+    
+    if (err.response) {
+      // Server responded with error status
+      errorMessage = err.response.data.message || errorMessage;
+    } else if (err.request) {
+      // Request was made but no response received
+      errorMessage = "Network error. Please check your connection.";
+    }
+
+    setError(errorMessage);
+    toast.error(errorMessage);
+    
+    // If session is invalid, hide the shipping form
+    if (err.response?.status === 404 || err.response?.status === 400) {
+      setShowShippingForm(false);
+    }
+  } finally {
+    setIsProcessing(false);
+  }
+};
 
   useEffect(() => {
     if (!sessionId) {
