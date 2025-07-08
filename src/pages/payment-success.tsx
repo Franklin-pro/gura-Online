@@ -20,7 +20,8 @@ export default function PaymentSuccess() {
     city: "",
     state: "",
     zipCode: "",
-    country: ""
+    country: "",
+    phone: ""
   });
 
   const sessionId = searchParams.get("session_id");
@@ -59,7 +60,8 @@ const handleCheckoutSuccess = async () => {
           city: shippingAddress.city.trim(),
           state: shippingAddress.state.trim(),
           zipCode: shippingAddress.zipCode.trim(),
-          country: shippingAddress.country.trim()
+          country: shippingAddress.country.trim(),
+          phone: shippingAddress.phone.trim()
         }
       },
       {
@@ -157,6 +159,7 @@ const handleCheckoutSuccess = async () => {
           </h2>
           {[
             { label: "Full Name", name: "name" },
+            { label: "Phone Number", name: "phone" },
             { label: "Address", name: "address" },
             { label: "City", name: "city" },
             { label: "State", name: "state" },
