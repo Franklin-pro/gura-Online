@@ -13,17 +13,45 @@ export default function PaymentSuccess() {
   const [amountPaid, setAmountPaid] = useState(null);
   const [searchParams] = useSearchParams();
 
-  const [shippingAddress, setShippingAddress] = useState("");
   const [showShippingForm, setShowShippingForm] = useState(true);
+  const [shippingAddress, setShippingAddress] = useState({
+    name: "",
+    address: "",
+    city: "",
+    state: "",
+    zipCode: "",
+    country: ""
+  });
 
   const sessionId = searchParams.get("session_id");
 
-  const handleCheckoutSuccess = async (sessionId, shippingAddress) => {
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setShippingAddress({ ...shippingAddress, [name]: value });
+  };
+
+  const validateAddress = () => {
+    const fields = Object.entries(shippingAddress);
+    for (const [key, value] of fields) {
+      if (!value.trim()) {
+        toast.error(`Please enter ${key}`);
+        return false;
+      }
+    }
+    return true;
+  };
+
+  const handleCheckoutSuccess = async () => {
+    if (!validateAddress()) return;
+
     setIsProcessing(true);
     try {
       const response = await axios.post(
         "https://gura-online-bn.onrender.com/api/v1/payments/checkout-success",
-        { sessionId, shippingAddress },
+        {
+          sessionId,
+          shippingAddress
+        },
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -99,28 +127,29 @@ export default function PaymentSuccess() {
   if (showShippingForm && sessionId) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-        <Card className="max-w-md w-full p-8 space-y-6">
-          <h2 className="text-xl font-bold text-gray-800 text-center">
-            Enter Shipping Address
+        <Card className="max-w-md w-full p-8 space-y-4">
+          <h2 className="text-xl font-bold text-gray-800 text-center mb-2">
+            Shipping Information
           </h2>
-          <textarea
-            className="w-full border rounded-md p-2 text-sm"
-            rows={4}
-            value={shippingAddress}
-            onChange={(e) => setShippingAddress(e.target.value)}
-            placeholder="123 Street Name, City, Country"
-          />
-          <Button
-            className="w-full"
-            onClick={() => {
-              if (!shippingAddress.trim()) {
-                toast.error("Please enter a shipping address.");
-                return;
-              }
-              handleCheckoutSuccess(sessionId, shippingAddress);
-            }}
-          >
-            Submit Shipping Info
+          {[
+            { label: "Full Name", name: "name" },
+            { label: "Address", name: "address" },
+            { label: "City", name: "city" },
+            { label: "State", name: "state" },
+            { label: "Zip Code", name: "zipCode" },
+            { label: "Country", name: "country" }
+          ].map((field) => (
+            <input
+              key={field.name}
+              name={field.name}
+              value={shippingAddress[field.name]}
+              onChange={handleInputChange}
+              placeholder={field.label}
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+            />
+          ))}
+          <Button className="w-full mt-4" onClick={handleCheckoutSuccess}>
+            Confirm and Place Order
           </Button>
         </Card>
       </div>
