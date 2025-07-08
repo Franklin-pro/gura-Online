@@ -56,7 +56,7 @@ interface Order {
     street?: string;
     city?: string;
     state?: string;
-    zipCode?: string;
+    address?: string;
     country?: string;
   };
   stripeSessionId?: string;
@@ -499,8 +499,8 @@ export default function OrderDetails() {
                     {order.shippingAddress.city && (
                       <p>
                         {order.shippingAddress.city}
-                        {order.shippingAddress.state && `, ${order.shippingAddress.state}`}
-                        {order.shippingAddress.zipCode && ` ${order.shippingAddress.zipCode}`}
+                        {order.shippingAddress.state && `, ${order.shippingAddress.state}`},
+                        {order.shippingAddress.address && ` ${order.shippingAddress.address}`}
                       </p>
                     )}
                     {order.shippingAddress.country && <p>{order.shippingAddress.country}</p>}
