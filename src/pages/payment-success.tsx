@@ -50,7 +50,7 @@ export default function PaymentSuccess() {
         "https://gura-online-bn.onrender.com/api/v1/payments/checkout-success",
         {
           sessionId,
-          shippingAddress
+           shippingAddress: { ...shippingAddress },
         },
         {
           headers: {
