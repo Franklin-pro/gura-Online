@@ -1,71 +1,75 @@
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import axios from "axios";
-import { CheckCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
+import axios from "axios";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { CheckCircle } from "lucide-react";
 import { toast } from "@/components/ui/sonner";
 
 export default function PaymentSuccess() {
-  const [isProcessing, setIsProcessing] = useState(true);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState(null);
   const [transactionId, setTransactionId] = useState(null);
   const [amountPaid, setAmountPaid] = useState(null);
   const [searchParams] = useSearchParams();
 
-  useEffect(() => {
-    const handleCheckoutSuccess = async (sessionId) => {
-      try {
-        const response = await axios.post(
-          "https://gura-online-bn.onrender.com/api/v1/payments/checkout-success",
-          { sessionId },
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
-        );
+  const [shippingAddress, setShippingAddress] = useState("");
+  const [showShippingForm, setShowShippingForm] = useState(true);
 
-        setTransactionId(response.data.transactionId);
-        setAmountPaid(response.data.amountPaid);
-        toast.success("Payment successful!");
+  const sessionId = searchParams.get("session_id");
 
-        // Clear cart after successful payment
-        try {
-          await axios.delete("https://gura-online-bn.onrender.com/api/v1/carts", {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          });
-          toast.success("Cart cleared");
-        } catch (cartError) {
-          console.error("Error clearing cart:", cartError);
-          toast.warning("Payment succeeded but cart couldn't be cleared");
+  const handleCheckoutSuccess = async (sessionId, shippingAddress) => {
+    setIsProcessing(true);
+    try {
+      const response = await axios.post(
+        "https://gura-online-bn.onrender.com/api/v1/payments/checkout-success",
+        { sessionId, shippingAddress },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
         }
-      } catch (err) {
-        console.error("Payment processing error:", err);
-        setError(
-          err.response?.data?.message ||
-            "Payment verification failed. Please check your orders."
-        );
-        toast.error(
-          err.response?.data?.message ||
-            "Payment verification failed. Please check your orders."
-        );
-      } finally {
-        setIsProcessing(false);
-      }
-    };
+      );
 
-    const sessionId = searchParams.get("session_id");
-    if (sessionId) {
-      handleCheckoutSuccess(sessionId);
-    } else {
-      setError("No session ID found. Please check your order history.");
+      setTransactionId(response.data.transactionId);
+      setAmountPaid(response.data.amountPaid);
+      toast.success("Payment successful!");
+
+      // Clear cart
+      try {
+        await axios.delete("https://gura-online-bn.onrender.com/api/v1/carts", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+        toast.success("Cart cleared");
+      } catch (cartError) {
+        console.error("Error clearing cart:", cartError);
+        toast.warning("Payment succeeded but cart couldn't be cleared");
+      }
+
+      setShowShippingForm(false);
+    } catch (err) {
+      console.error("Payment processing error:", err);
+      setError(
+        err.response?.data?.message ||
+          "Payment verification failed. Please check your orders."
+      );
+      toast.error(
+        err.response?.data?.message ||
+          "Payment verification failed. Please check your orders."
+      );
+    } finally {
       setIsProcessing(false);
-      toast.error("No session ID found. Please check your order history.");
     }
-  }, [searchParams]);
+  };
+
+  useEffect(() => {
+    if (!sessionId) {
+      setError("No session ID found. Please check your order history.");
+      setShowShippingForm(false);
+    }
+  }, [sessionId]);
 
   if (isProcessing) {
     return (
@@ -88,6 +92,37 @@ export default function PaymentSuccess() {
             <Link to="/">Continue Shopping</Link>
           </Button>
         </div>
+      </div>
+    );
+  }
+
+  if (showShippingForm && sessionId) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+        <Card className="max-w-md w-full p-8 space-y-6">
+          <h2 className="text-xl font-bold text-gray-800 text-center">
+            Enter Shipping Address
+          </h2>
+          <textarea
+            className="w-full border rounded-md p-2 text-sm"
+            rows={4}
+            value={shippingAddress}
+            onChange={(e) => setShippingAddress(e.target.value)}
+            placeholder="123 Street Name, City, Country"
+          />
+          <Button
+            className="w-full"
+            onClick={() => {
+              if (!shippingAddress.trim()) {
+                toast.error("Please enter a shipping address.");
+                return;
+              }
+              handleCheckoutSuccess(sessionId, shippingAddress);
+            }}
+          >
+            Submit Shipping Info
+          </Button>
+        </Card>
       </div>
     );
   }
