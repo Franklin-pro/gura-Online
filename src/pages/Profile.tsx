@@ -7,6 +7,8 @@ import { Package, MessageSquare, RefreshCcw, User } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 import axios from "axios";
 import { toast } from "@/components/ui/sonner";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -73,6 +75,10 @@ export default function Profile() {
   const [userData, setUserData] = useState<User | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+ const [cancelOrderId, setCancelOrderId] = useState<string | null>(null);
+  const [cancelReason, setCancelReason] = useState('');
+  const [showCancelDialog, setShowCancelDialog] = useState(false);
+
   const [ordersLoading, setOrdersLoading] = useState(false);
   const [selectedTab, setSelectedTab] = useState("all");
   const navigate = useNavigate();
@@ -123,7 +129,7 @@ export default function Profile() {
     }
   };
 
-  const handleCancelOrder = async (orderId: string) => {
+  const handleCancelOrder = async (orderId: string,reason: string) => {
     try {
       await axios.put(`https://gura-online-bn.onrender.com/api/v1/orders/${orderId}/cancel`, {}, {
         headers: {
@@ -210,35 +216,38 @@ export default function Profile() {
       <Header/>
       <div className="container mx-auto px-4 py-8">
         {/* Profile Header */}
-        <Card className="p-6 mb-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Avatar className="h-16 w-16 hover:ring-2 hover:ring-offset-2 ring-gray-200 transition-all">
-                <AvatarFallback>
-                  {getUserInitials(userData.name)}
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                <h2 className="text-xl font-semibold">{userData.name}</h2>
-                <p className="text-gray-500">{userData.email}</p>
-                <p className="text-sm text-gray-400">
-                  Member since {formatDate(userData.createdAt)}
-                </p>
-                <span className="inline-block px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full mt-1 capitalize">
-                  {userData.role}
-                </span>
-              </div>
-            </div>
-            <div className="flex items-center gap-4">
-              <Button variant="outline" asChild>
-                <Link to="/profile/edit">Edit Profile</Link>
-              </Button>
-              <div className="text-red-500">
-                Coupons(4)
-              </div>
-            </div>
-          </div>
-        </Card>
+      <Card className="p-6 mb-6">
+  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    {/* User Info */}
+    <div className="flex items-center gap-4">
+      <Avatar className="h-16 w-16 sm:h-16 sm:w-16 max-sm:h-10 max-sm:w-10 hover:ring-2 hover:ring-offset-2 ring-gray-200 transition-all">
+        <AvatarFallback>
+          {getUserInitials(userData.name)}
+        </AvatarFallback>
+      </Avatar>
+      <div className="space-y-1">
+        <h2 className="text-lg sm:text-xl font-semibold truncate">{userData.name}</h2>
+        <p className="text-gray-500 text-sm sm:text-base truncate">{userData.email}</p>
+        <p className="text-xs sm:text-sm text-gray-400">
+          Member since {formatDate(userData.createdAt)}
+        </p>
+        <span className="inline-block px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full mt-1 capitalize">
+          {userData.role}
+        </span>
+      </div>
+    </div>
+
+    {/* Actions */}
+    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
+      <Button variant="outline" asChild className="w-full sm:w-auto">
+        <Link to="/profile/edit">Edit Profile</Link>
+      </Button>
+      <div className="text-red-500 text-sm sm:text-base">
+        Coupons (4)
+      </div>
+    </div>
+  </div>
+</Card>
 
         {/* Order Status */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
@@ -300,11 +309,16 @@ export default function Profile() {
                 <TabsContent value="all" className="space-y-4">
                   {orders.length > 0 ? (
                     orders.map(order => (
-                      <OrderItem 
-                        key={order._id}
-                        order={order}
-                        onCancel={handleCancelOrder}
-                      />
+                   <OrderItem 
+  key={order._id}
+  order={order}
+  onCancel={handleCancelOrder}
+  onShowCancelDialog={(orderId) => {
+    setCancelOrderId(orderId);
+    setShowCancelDialog(true);
+  }}
+/>
+
                     ))
                   ) : (
                     <EmptyState status="all" />
@@ -316,11 +330,16 @@ export default function Profile() {
                     orders
                       .filter(o => o.status === 'pending')
                       .map(order => (
-                        <OrderItem 
-                          key={order._id}
-                          order={order}
-                          onCancel={handleCancelOrder}
-                        />
+                      <OrderItem 
+  key={order._id}
+  order={order}
+  onCancel={handleCancelOrder}
+  onShowCancelDialog={(orderId) => {
+    setCancelOrderId(orderId);
+    setShowCancelDialog(true);
+  }}
+/>
+
                       ))
                   ) : (
                     <EmptyState status="pending" />
@@ -332,11 +351,16 @@ export default function Profile() {
                     orders
                       .filter(o => o.status === 'processing')
                       .map(order => (
-                        <OrderItem 
-                          key={order._id}
-                          order={order}
-                          onCancel={handleCancelOrder}
-                        />
+                    <OrderItem 
+  key={order._id}
+  order={order}
+  onCancel={handleCancelOrder}
+  onShowCancelDialog={(orderId) => {
+    setCancelOrderId(orderId);
+    setShowCancelDialog(true);
+  }}
+/>
+
                       ))
                   ) : (
                     <EmptyState status="processing" />
@@ -348,11 +372,16 @@ export default function Profile() {
                     orders
                       .filter(o => o.status === 'delivered')
                       .map(order => (
-                        <OrderItem 
-                          key={order._id}
-                          order={order}
-                          onCancel={handleCancelOrder}
-                        />
+                    <OrderItem 
+  key={order._id}
+  order={order}
+  onCancel={handleCancelOrder}
+  onShowCancelDialog={(orderId) => {
+    setCancelOrderId(orderId);
+    setShowCancelDialog(true);
+  }}
+/>
+
                       ))
                   ) : (
                     <EmptyState status="delivered" />
@@ -363,15 +392,66 @@ export default function Profile() {
           </Tabs>
         </Card>
       </div>
+      <Dialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
+  <DialogContent>
+    <DialogHeader>
+      <DialogTitle>Cancel Order</DialogTitle>
+    </DialogHeader>
+
+    <div>
+      <label htmlFor="reason" className="text-sm font-medium mb-1 block">
+        Reason for cancellation
+      </label>
+      <Textarea
+        id="reason"
+        value={cancelReason}
+        onChange={(e) => setCancelReason(e.target.value)}
+        placeholder="Please provide a reason..."
+        className="min-h-[100px]"
+      />
+    </div>
+
+    <DialogFooter className="mt-4">
+      <Button variant="ghost" onClick={() => {
+        setShowCancelDialog(false);
+        setCancelOrderId(null);
+        setCancelReason('');
+      }}>
+        Close
+      </Button>
+      <Button
+        variant="destructive"
+        disabled={!cancelReason.trim()}
+        onClick={async () => {
+          if (cancelOrderId) {
+            await handleCancelOrder(cancelOrderId, cancelReason);
+            setShowCancelDialog(false);
+            setCancelOrderId(null);
+            setCancelReason('');
+          }
+        }}
+      >
+        Confirm Cancel
+      </Button>
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
+
       <Footer/>
     </div>
   );
 }
 
-function OrderItem({ order, onCancel }: {
+function OrderItem({
+  order,
+  onCancel,
+  onShowCancelDialog,
+}: {
   order: Order;
-  onCancel: (orderId: string) => void;
+  onCancel: (orderId: string, reason: string) => void;
+  onShowCancelDialog: (orderId: string) => void;
 }) {
+
   const navigate = useNavigate();
 
   const getStatusColor = (status: string) => {
@@ -470,15 +550,17 @@ const getProductName = (product: OrderProduct) => {
             Track Order
           </Button>
         )}
-        {['pending', 'processing'].includes(order.status) && (
-          <Button 
-            variant="destructive" 
-            size="sm"
-            onClick={() => onCancel(order._id)}
-          >
-            Cancel Order
-          </Button>
-        )}
+      {['pending', 'processing'].includes(order.status) && (
+  <Button
+    variant="destructive"
+    size="sm"
+ onClick={() => onShowCancelDialog(order._id)}
+
+  >
+    Cancel Order
+  </Button>
+)}
+
 
         {order.status === 'delivered' && (
           <Button 
@@ -531,7 +613,7 @@ function EmptyState({ status }: { status: string }) {
       {content.icon}
       <p className="text-gray-500">{content.text}</p>
       <Button className="mt-4" asChild>
-        <Link to="/products">Continue Shopping</Link>
+        <Link to="/">Continue Shopping</Link>
       </Button>
     </div>
   );
