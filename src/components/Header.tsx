@@ -48,13 +48,18 @@ export default function Header() {
     }
   };
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`/category/${searchQuery}`);
-      setSearchQuery("");
-    }
-  };
+const handleSearch = async (e: React.FormEvent) => {
+  e.preventDefault();
+
+  const query = searchQuery.trim();
+  if (!query) return;
+
+  // Just navigate to /search?q=your_query
+  navigate(`/search?q=${encodeURIComponent(query)}`);
+
+  setSearchQuery("");
+};
+
 
   const handleLogout = () => {
     logout();

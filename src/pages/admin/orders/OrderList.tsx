@@ -1,3 +1,4 @@
+import React, { useEffect, useState } from "react";
 import {
   Table,
   TableHeader,
@@ -15,110 +16,153 @@ interface Order {
   invoiceId: string;
   customer: string;
   amount: number;
-  status: "paid" | "pending";
+  status: string; // e.g. "paid", "processing"
+  orderStatus: string; // e.g. "completed", "pending"
   issueDate: string;
-  dueDate: string;
+  dueDate?: string | null;
 }
 
-const orders: Order[] = [
-  {
-    id: "1",
-    invoiceId: "INV-0019",
-    customer: "ACME SRL",
-    amount: 55.5,
-    status: "paid",
-    issueDate: "01/02/2024",
-    dueDate: "08/02/2024",
-  },
-  {
-    id: "2",
-    invoiceId: "INV-0018",
-    customer: "Blind Spots Inc.",
-    amount: 688.9,
-    status: "paid",
-    issueDate: "01/02/2024",
-    dueDate: "07/02/2024",
-  },
-  {
-    id: "3",
-    invoiceId: "INV-0017",
-    customer: "Beauty Clinic SRL",
-    amount: 695.2,
-    status: "paid",
-    issueDate: "01/02/2024",
-    dueDate: "10/02/2024",
-  },
-  {
-    id: "4",
-    invoiceId: "INV-0021",
-    customer: "Matt Jason",
-    amount: 523.11,
-    status: "pending",
-    issueDate: "30/01/2024",
-    dueDate: "28/02/2024",
-  },
-  {
-    id: "5",
-    invoiceId: "INV-0020",
-    customer: "Matt Jason",
-    amount: 253.76,
-    status: "pending",
-    issueDate: "30/01/2024",
-    dueDate: "15/02/2024",
-  },
-];
-
 export default function OrdersTable() {
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+
+  useEffect(() => {
+    async function fetchOrders() {
+      try {
+        setLoading(true);
+        const response = await fetch(
+          "https://gura-online-bn.onrender.com/api/v1/orders/alls",
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+        if (!response.ok) {
+          throw new Error(`Error: ${response.statusText}`);
+        }
+        const json = await response.json();
+
+        // Map API data to Order interface
+        const mappedOrders: Order[] = (json.data || []).map((order: any) => ({
+          id: order._id,
+          invoiceId: order.orderNumber,
+          customer: order.user?.name || "Unknown",
+          amount: order.totalAmount,
+          status: order.paymentStatus || "pending",
+          orderStatus: order.status || "pending",
+          issueDate: new Date(order.createdAt).toLocaleDateString(),
+          dueDate: null, // Or set as needed if you have due date info
+        }));
+
+        setOrders(mappedOrders);
+        setError(null);
+      } catch (err: any) {
+        setError(err.message || "Failed to fetch orders");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchOrders();
+  }, []);
+
+  const filteredOrders = orders.filter(
+    (order) =>
+      order.invoiceId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.customer.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div className="rounded-md border">
       <div>
         <div className="flex items-center space-x-2 p-4">
           <input
             type="text"
-            placeholder="Search..."
+            placeholder="Search by invoice or customer..."
             className="px-4 py-2 border rounded-md"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
-          <Button variant="outline" size="sm">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              // Optionally trigger refetch or just filter locally
+            }}
+          >
             Search
           </Button>
         </div>
       </div>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>INVOICE</TableHead>
-            <TableHead>CUSTOMER</TableHead>
-            <TableHead>AMOUNT</TableHead>
-            <TableHead>STATUS</TableHead>
-            <TableHead>ISSUED</TableHead>
-            <TableHead>DUE</TableHead>
-            <TableHead></TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {orders.map((order) => (
-            <TableRow key={order.id}>
-              <TableCell>{order.invoiceId}</TableCell>
-              <TableCell>{order.customer}</TableCell>
-              <TableCell>${order.amount.toFixed(2)}</TableCell>
-              <TableCell>
-                <Badge
-                  variant={order.status === "paid" ? "default" : "secondary"}
-                >
-                  {order.status.toUpperCase()}
-                </Badge>
-              </TableCell>
-              <TableCell>{order.issueDate}</TableCell>
-              <TableCell>{order.dueDate}</TableCell>
-              <TableCell>
-                <Button variant="ghost" size="icon">
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </TableCell>
+
+      {loading && <p className="p-4">Loading orders...</p>}
+      {error && <p className="p-4 text-red-500">Error: {error}</p>}
+
+      {!loading && !error && (
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>INVOICE</TableHead>
+              <TableHead>CUSTOMER</TableHead>
+              <TableHead>AMOUNT</TableHead>
+              <TableHead>STATUS</TableHead>
+              <TableHead>ISSUED</TableHead>
+              <TableHead>Order Stutus</TableHead>
+              <TableHead></TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {filteredOrders.length > 0 ? (
+              filteredOrders.map((order) => (
+                <TableRow key={order.id}>
+                  <TableCell>{order.invoiceId}</TableCell>
+                  <TableCell>{order.customer}</TableCell>
+                  <TableCell>${order.amount.toFixed(2)}</TableCell>
+                  <TableCell>
+                    <Badge
+                      variant={
+                        order.status.toLowerCase() === "paid"
+                          ? "default"
+                          : "secondary"
+                      }
+                    >
+                      {order.status.toUpperCase()}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>{order.issueDate}</TableCell>
+                  <TableCell>
+                    <Badge
+                      variant={
+                        order.orderStatus.toLowerCase() === "completed"
+                          ? "default"
+                          : order.orderStatus.toLowerCase() === "processing"
+                          ? "secondary"
+                          : "outline"
+                      }
+                    >
+                      {order.orderStatus.toUpperCase()}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Button variant="ghost" size="icon">
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={7} className="text-center p-4">
+                  No orders found.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      )}
     </div>
   );
 }
