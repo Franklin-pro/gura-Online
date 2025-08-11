@@ -49,7 +49,7 @@ export default function OrdersTable() {
         const mappedOrders: Order[] = (json.data || []).map((order: any) => ({
           id: order._id,
           invoiceId: order.orderNumber,
-          customer: order.user?.name || "Unknown",
+          customer: order.user?.name || "Unknown Customer",
           amount: order.totalAmount,
           status: order.paymentStatus || "pending",
           orderStatus: order.status || "pending",
