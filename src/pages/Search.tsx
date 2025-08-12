@@ -1,5 +1,5 @@
 
-import GlobalSearch from '@/components/globalSearch'
+import GlobalSearch from '../components/GlobalSearch'
 import React from 'react'
 
 function Search() {
