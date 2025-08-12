@@ -44,7 +44,7 @@ export default function Dashboard() {
         const token = localStorage.getItem("token");
 
         const [ordersRes, productsRes] = await Promise.all([
-          fetch("https://gura-online-bn.onrender.com/api/v1/orders/alls", {
+          fetch("https://gura-online-bn.onrender.com/api/v1/orders/all", {
             headers: { Authorization: `Bearer ${token}` }
           }),
           fetch("https://gura-online-bn.onrender.com/api/v1/products", {
