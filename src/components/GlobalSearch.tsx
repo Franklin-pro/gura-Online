@@ -26,7 +26,7 @@ const GlobalSearch = () => {
       setLoading(true);
       try {
         const res = await fetch(
-          `http://localhost:3000/api/v1/products/search?query=${encodeURIComponent(queryParam)}`
+          `https://gura-online-bn.onrender.com/api/v1/products/search?query=${encodeURIComponent(queryParam)}`
         );
         if (!res.ok) {
           setSearchResults([]);

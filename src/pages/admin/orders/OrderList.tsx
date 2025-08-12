@@ -32,14 +32,9 @@ export default function OrdersTable() {
     async function fetchOrders() {
       try {
         setLoading(true);
-        const response = await fetch(
-          "https://gura-online-bn.onrender.com/api/v1/orders/alls",
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
-        );
+        const response = await fetch("https://gura-online-bn.onrender.com/api/v1/orders/admin/all", {
+  headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+});
         if (!response.ok) {
           throw new Error(`Error: ${response.statusText}`);
         }
