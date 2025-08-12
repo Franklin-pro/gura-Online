@@ -65,7 +65,7 @@ export default function HeroBanner() {
   if (loading) {
     return (
       <div className="min-h-[300px] md:min-h-[400px] flex items-center justify-center">
-        Loading...
+        Loading....
       </div>
     );
   }
