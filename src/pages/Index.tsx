@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import HeroBanner from "@/components/HeroBanner";
 import FlashSales from "@/components/FlashSales";
@@ -14,22 +13,50 @@ import Checkout from "@/components/Checkout";
 
 const Index = () => {
   const [showCheckout, setShowCheckout] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [products, setProducts] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetch('https://gura-online-bn.onrender.com/api/v1/products');
+        const result = await response.json();
+        if (result.success) {
+          setProducts(result.data);
+        } else {
+          console.error('Failed to fetch products:', result.message);
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Header />
+   
       <main className="flex-1">
-        {showCheckout ? (
+        {isLoading ? (
+          <div className="flex justify-center items-center min-h-[50vh]">
+            <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500"></div>
+          </div>
+        ) : showCheckout ? (
           <Checkout onBack={() => setShowCheckout(false)} />
         ) : (
           <>
+             <Header />
             <HeroBanner />
             <FlashSales />
-            <CategoryBrowser />
+            <CategoryBrowser/>
             <BestSelling />
             <EnhanceMusic />
             <ExploreProducts />
-            <NewArrivals />
+            <NewArrivals  />
             <FeaturesBanner />
           </>
         )}
