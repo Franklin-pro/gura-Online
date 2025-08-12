@@ -1,8 +1,20 @@
 import { Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarProvider, SidebarMenuSub, SidebarMenuSubItem, SidebarMenuSubButton } from "@/components/ui/sidebar"
 import { Link, Outlet } from "react-router-dom"
-import { LayoutDashboard, Package, Users, ShoppingCart, Settings, ListOrdered, PackagePlus } from "lucide-react"
+import { LayoutDashboard, Package, Users, ShoppingCart, Settings, ListOrdered, PackagePlus, LogOut } from "lucide-react"
+import { useState } from "react";
 
 export default function AdminLayout() {
+  const [isLoggedIn, setIsLoggedIn] = useState(true); // Replace with actual auth logic
+
+const handleLogout = () => {
+  localStorage.removeItem("token");
+  localStorage.removeItem("userInfo");
+  setIsLoggedIn(false);
+  window.location.href = "/login"; // Redirect to login page
+}
+
+
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-gray-50">
@@ -70,6 +82,12 @@ export default function AdminLayout() {
                     <Settings className="w-5 h-5" />
                     <span>Settings</span>
                   </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton onClick={handleLogout} tooltip="Logout" className="text-red-500 bottom-0">
+                  <LogOut className="w-5 h-5" />
+                  <span className="text-red-500">Logout</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
