@@ -25,6 +25,7 @@ import Customers from "./pages/admin/customers";
 import PrivateRoute from "./components/PrivateRoutes";
 import ResetPassword from "./pages/ResetPassword";
 import OrderDetails from "./pages/OrderDetails";
+import Search from "./pages/Search";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +41,7 @@ const App = () => (
             <Route path="/cart" element={<PrivateRoute><Cart /></PrivateRoute>} />
             <Route path="/favorites" element={<PrivateRoute><Favorites /></PrivateRoute>} />
             <Route path="/product/:id" element={<ProductDetails />} />
+            <Route path="/search" element={<Search />} />
             <Route path="/orders/:orderId" element={<OrderDetails />} />
             <Route path="/category/:categoryName" element={<CategoryPage />} />
             <Route path="/shop" element={<Shop />} />

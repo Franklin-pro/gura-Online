@@ -1,1 +1,9 @@
+# ===== API ROUTES =====
+# Forward all API requests to your backend (Render)
+# The :splat matches whatever comes after /api/
+# Example: /api/v1/orders → https://gura-online-bn.onrender.com/api/v1/orders
+/api/*    https://gura-online-bn.onrender.com/api/:splat    200
+
+# ===== FRONTEND SPA FALLBACK =====
+# Send all other routes to index.html so client-side routing works
 /*    /index.html   200

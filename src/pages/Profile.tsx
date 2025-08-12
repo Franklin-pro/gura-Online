@@ -114,7 +114,7 @@ export default function Profile() {
     try {
       setOrdersLoading(true);
       const response = await axios.get(
-        `https://gura-online-bn.onrender.com/api/v1/orders/all`,
+        `https://gura-online-bn.onrender.com/api/v1/orders`,
         {
           params: {
             status: selectedTab === "all" ? undefined : selectedTab,
