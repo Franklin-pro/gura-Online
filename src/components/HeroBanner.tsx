@@ -64,8 +64,35 @@ export default function HeroBanner() {
 
   if (loading) {
     return (
-      <div className="min-h-[300px] md:min-h-[400px] flex items-center justify-center">
-        Loading....
+      <div
+        className="relative overflow-hidden bg-gray-100"
+        role="status"
+        aria-label="Loading banner"
+      >
+        <div className="container mx-auto flex flex-col md:flex-row items-center px-4 py-8 min-h-[300px] md:min-h-[400px] bg-black">
+          {/* Text section */}
+          <div className="md:w-1/2 space-y-4 z-10">
+            <div className="h-8 md:h-10 w-3/4 bg-gray-200 rounded animate-pulse"></div>
+            <div className="h-6 w-full bg-gray-200 rounded animate-pulse"></div>
+            <div className="h-6 w-1/3 bg-gray-200 rounded animate-pulse"></div>
+            <div className="h-10 w-32 bg-gray-200 rounded animate-pulse"></div>
+          </div>
+          {/* Image section */}
+          <div className="md:w-1/2 flex justify-center items-center mt-4 md:mt-0">
+            <div className="max-h-[300px] w-full md:w-3/4 bg-gray-200 rounded animate-pulse"></div>
+          </div>
+        </div>
+        {/* Skeleton for navigation buttons and dots */}
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+          {[...Array(3)].map((_, index) => (
+            <div
+              key={index}
+              className="h-2 w-2 rounded-full bg-gray-200 animate-pulse"
+            ></div>
+          ))}
+        </div>
+        <div className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-gray-200 rounded-full p-2 h-10 w-10 animate-pulse"></div>
+        <div className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gray-200 rounded-full p-2 h-10 w-10 animate-pulse"></div>
       </div>
     );
   }
