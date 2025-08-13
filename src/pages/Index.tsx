@@ -10,11 +10,22 @@ import NewArrivals from "@/components/NewArrivals";
 import FeaturesBanner from "@/components/FeaturesBanner";
 import Footer from "@/components/Footer";
 import Checkout from "@/components/Checkout";
+import SplashScreen from "../components/SplashScreen";
 
 const Index = () => {
   const [showCheckout, setShowCheckout] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [products, setProducts] = useState([]);
+  const [showSplash, setShowSplash] = useState(true);
+
+  useEffect(() => {
+    // Splash screen timer (e.g., 2 seconds)
+    const splashTimeout = setTimeout(() => {
+      setShowSplash(false);
+    }, 2000);
+
+    return () => clearTimeout(splashTimeout);
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -37,9 +48,12 @@ const Index = () => {
     fetchData();
   }, []);
 
+  if (showSplash) {
+    return <SplashScreen />;
+  }
+
   return (
     <div className="min-h-screen flex flex-col">
-   
       <main className="flex-1">
         {isLoading ? (
           <div className="flex justify-center items-center min-h-[50vh]">
@@ -49,14 +63,14 @@ const Index = () => {
           <Checkout onBack={() => setShowCheckout(false)} />
         ) : (
           <>
-             <Header />
+            <Header />
             <HeroBanner />
             <FlashSales />
-            <CategoryBrowser/>
+            <CategoryBrowser />
             <BestSelling />
             <EnhanceMusic />
             <ExploreProducts />
-            <NewArrivals  />
+            <NewArrivals />
             <FeaturesBanner />
           </>
         )}
