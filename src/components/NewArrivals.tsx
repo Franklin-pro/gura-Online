@@ -27,10 +27,43 @@ export default function NewArrivals() {
 
   if (loading) {
     return (
-      <div className="flex justify-center text-red-500 items-center h-64">
-        <Loader className="w-10 h-10 animate-spin text-red-500 text-primary" />
-        <span className="ml-3 text-lg font-bold">Loading new arrivals...</span>
-      </div>
+      <section className="py-10 container mx-auto px-4" role="status" aria-label="Loading new arrivals">
+        <div className="flex items-center gap-4 mb-6">
+          <div className="w-4 h-8 bg-gray-200 rounded-sm animate-pulse"></div>
+          <div className="h-8 w-40 bg-gray-200 rounded animate-pulse"></div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Featured product skeleton */}
+          <div className="relative overflow-hidden rounded-lg bg-gray-200 h-[400px]">
+            <div className="w-full h-full bg-gray-200 animate-pulse"></div>
+            <div className="absolute inset-0 flex flex-col justify-end p-8 space-y-4">
+              <div className="h-6 w-3/4 bg-gray-300 rounded animate-pulse"></div>
+              <div className="h-4 w-full bg-gray-300 rounded animate-pulse"></div>
+              <div className="h-10 w-32 bg-gray-300 rounded animate-pulse"></div>
+            </div>
+          </div>
+
+          {/* Other products skeleton */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {[...Array(4)].map((_, index) => (
+              <div
+                key={index}
+                className="relative overflow-hidden rounded-lg bg-gray-200 h-[190px]"
+              >
+                <div className="w-full h-full bg-gray-200 animate-pulse"></div>
+                <div className="absolute inset-0 flex flex-col justify-end p-4 space-y-1">
+                  <div className="bg-gray-300/50 rounded-lg p-2 space-y-1">
+                    <div className="h-5 w-2/3 bg-gray-300 rounded animate-pulse"></div>
+                    <div className="h-3 w-full bg-gray-300 rounded animate-pulse"></div>
+                  </div>
+                  <div className="h-8 w-24 bg-gray-300 rounded animate-pulse"></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
     );
   }
 
@@ -54,7 +87,7 @@ export default function NewArrivals() {
         <h2 className="text-2xl font-bold">New Arrival</h2>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 ">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="relative overflow-hidden rounded-lg bg-black text-white h-[400px] group">
           <img
             src={featuredProduct.image || "https://via.placeholder.com/400"}
@@ -64,7 +97,10 @@ export default function NewArrivals() {
           <div className="absolute inset-0 flex flex-col justify-end p-8">
             <h3 className="text-xl font-bold mb-1">{featuredProduct.name}</h3>
             <p className="text-sm opacity-90 mb-4">{featuredProduct.description}</p>
-            <Link to={`/product/${featuredProduct._id}`} className="border-white text-red-500 p-2 rounded-md bg-white hover:bg-white/20 w-fit">
+            <Link
+              to={`/product/${featuredProduct._id}`}
+              className="border-white text-red-500 p-2 rounded-md bg-white hover:bg-white/20 w-fit"
+            >
               Shop Now
             </Link>
           </div>
@@ -82,11 +118,14 @@ export default function NewArrivals() {
                 className="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-500"
               />
               <div className="absolute inset-0 flex bg-black/20 space-y-1 flex-col justify-end p-4">
-               <div className="bg-black/35 rounded-lg p-2">
-                 <h3 className="text-lg font-bold text-white">{product.name}</h3>
-                <p className="text-xs opacity-90 mb-2 text-white">{product.description}</p>
-               </div>
-                <Link  to={`/product/${product._id}`} className="text-white rounded-md bg-red-500 p-1 h-auto w-fit">
+                <div className="bg-black/35 rounded-lg p-2">
+                  <h3 className="text-lg font-bold text-white">{product.name}</h3>
+                  <p className="text-xs opacity-90 mb-2 text-white">{product.description}</p>
+                </div>
+                <Link
+                  to={`/product/${product._id}`}
+                  className="text-white rounded-md bg-red-500 p-1 h-auto w-fit"
+                >
                   Shop Now &rarr;
                 </Link>
               </div>
