@@ -77,7 +77,6 @@ interface TrackingEvent {
 
 export default function OrderDetails() {
   const { orderId } = useParams<{ orderId: string }>();
-  console.log("Order ID:", orderId);
   const navigate = useNavigate();
   
   const [order, setOrder] = useState<Order | null>(null);

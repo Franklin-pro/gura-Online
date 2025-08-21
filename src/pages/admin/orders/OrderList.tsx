@@ -28,6 +28,27 @@ export default function OrdersTable() {
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
 
+  const updateOrderStatus = async (orderId: string, newStatus: string) => {
+    try {
+      const response = await fetch(`https://gura-online-bn.onrender.com/api/v1/orders/admin/${orderId}/status`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      
+      if (response.ok) {
+        setOrders(prev => prev.map(order => 
+          order.id === orderId ? { ...order, orderStatus: newStatus } : order
+        ));
+      }
+    } catch (err) {
+      console.error('Failed to update order status:', err);
+    }
+  };
+
   useEffect(() => {
     async function fetchOrders() {
       try {
@@ -73,17 +94,18 @@ export default function OrdersTable() {
   return (
     <div className="rounded-md border">
       <div>
-        <div className="flex items-center space-x-2 p-4">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-2 p-4">
           <input
             type="text"
             placeholder="Search by invoice or customer..."
-            className="px-4 py-2 border rounded-md"
+            className="flex-1 px-4 py-2 border rounded-md text-sm"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
           <Button
             variant="outline"
             size="sm"
+            className="w-full sm:w-auto"
             onClick={() => {
               // Optionally trigger refetch or just filter locally
             }}
@@ -97,25 +119,26 @@ export default function OrdersTable() {
       {error && <p className="p-4 text-red-500">Error: {error}</p>}
 
       {!loading && !error && (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>INVOICE</TableHead>
-              <TableHead>CUSTOMER</TableHead>
-              <TableHead>AMOUNT</TableHead>
-              <TableHead>STATUS</TableHead>
-              <TableHead>ISSUED</TableHead>
-              <TableHead>Order Stutus</TableHead>
-              <TableHead></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="min-w-[120px]">INVOICE</TableHead>
+                <TableHead className="min-w-[150px]">CUSTOMER</TableHead>
+                <TableHead className="min-w-[100px]">AMOUNT</TableHead>
+                <TableHead className="min-w-[100px]">STATUS</TableHead>
+                <TableHead className="min-w-[100px]">ISSUED</TableHead>
+                <TableHead className="min-w-[150px]">Order Status</TableHead>
+                <TableHead className="w-[50px]">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
             {filteredOrders.length > 0 ? (
               filteredOrders.map((order) => (
                 <TableRow key={order.id}>
-                  <TableCell>{order.invoiceId}</TableCell>
-                  <TableCell>{order.customer}</TableCell>
-                  <TableCell>${order.amount.toFixed(2)}</TableCell>
+                  <TableCell className="font-mono text-sm">{order.invoiceId}</TableCell>
+                  <TableCell className="max-w-[150px] truncate" title={order.customer}>{order.customer}</TableCell>
+                  <TableCell className="font-semibold">${order.amount.toFixed(2)}</TableCell>
                   <TableCell>
                     <Badge
                       variant={
@@ -129,17 +152,21 @@ export default function OrdersTable() {
                   </TableCell>
                   <TableCell>{order.issueDate}</TableCell>
                   <TableCell>
-                    <Badge
-                      variant={
-                        order.orderStatus.toLowerCase() === "completed"
-                          ? "default"
-                          : order.orderStatus.toLowerCase() === "processing"
-                          ? "secondary"
-                          : "outline"
-                      }
+                    <select
+                      value={order.orderStatus}
+                      onChange={(e) => updateOrderStatus(order.id, e.target.value)}
+                      className={`w-full px-2 py-1 border rounded text-xs sm:text-sm font-medium ${
+                        order.orderStatus === 'delivered' ? 'bg-green-100 text-green-800 border-green-300' :
+                        order.orderStatus === 'shipped' ? 'bg-blue-100 text-blue-800 border-blue-300' :
+                        order.orderStatus === 'cancelled' ? 'bg-red-100 text-red-800 border-red-300' :
+                        'bg-yellow-100 text-yellow-800 border-yellow-300'
+                      }`}
                     >
-                      {order.orderStatus.toUpperCase()}
-                    </Badge>
+                      <option value="processing">Processing</option>
+                      <option value="delivered">Delivered</option>
+                      <option value="cancelled">Cancelled</option>
+                      <option value="shipped">Shipped</option>
+                    </select>
                   </TableCell>
                   <TableCell>
                     <Button variant="ghost" size="icon">
@@ -155,8 +182,9 @@ export default function OrdersTable() {
                 </TableCell>
               </TableRow>
             )}
-          </TableBody>
-        </Table>
+            </TableBody>
+          </Table>
+        </div>
       )}
     </div>
   );

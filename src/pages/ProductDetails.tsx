@@ -121,10 +121,52 @@ const handleAddRate = async (rating: number) => {
   const decreaseQty = () => setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
 
   if (loading) return (
-    <div className="text-lg spinner text-red-500 flex items-center gap-3"> 
-      <Loader className="w-10 h-10 border-gray-300 border-t-primary rounded-full animate-spin"/>
-      <p className="font-bold">Loading product details...</p>
-    </div>
+<div className="max-w-5xl mx-auto px-4 py-10 grid grid-cols-1 md:grid-cols-2 gap-8">
+        {/* Image placeholder */}
+        <div className="w-full h-[400px] bg-gray-200 rounded-2xl animate-pulse"></div>
+
+        {/* Product details placeholder */}
+        <div>
+          {/* Product name placeholder */}
+          <div className="h-8 w-3/4 bg-gray-200 rounded mb-2 animate-pulse"></div>
+
+          {/* Rating placeholder */}
+          <div className="flex items-center gap-2 mb-4">
+            <div className="flex gap-1">
+              {[...Array(5)].map((_, i) => (
+                <div
+                  key={i}
+                  className="w-5 h-5 bg-gray-200 rounded-full animate-pulse"
+                />
+              ))}
+            </div>
+            <div className="h-4 w-20 bg-gray-200 rounded animate-pulse"></div>
+          </div>
+
+          {/* Price placeholder */}
+          <div className="h-6 w-1/4 bg-gray-200 rounded mb-4 animate-pulse"></div>
+
+          {/* Description placeholder */}
+          <div className="space-y-2 mb-6">
+            <div className="h-4 w-full bg-gray-200 rounded animate-pulse"></div>
+            <div className="h-4 w-5/6 bg-gray-200 rounded animate-pulse"></div>
+            <div className="h-4 w-3/4 bg-gray-200 rounded animate-pulse"></div>
+          </div>
+
+          {/* Quantity controls placeholder */}
+          <div className="flex items-center gap-4 mb-6">
+            <div className="h-10 w-10 bg-gray-200 rounded animate-pulse"></div>
+            <div className="h-6 w-8 bg-gray-200 rounded animate-pulse"></div>
+            <div className="h-10 w-10 bg-gray-200 rounded animate-pulse"></div>
+          </div>
+
+          {/* Buttons placeholder */}
+          <div className="flex items-center gap-4">
+            <div className="h-10 w-32 bg-gray-200 rounded animate-pulse"></div>
+            <div className="h-10 w-10 bg-gray-200 rounded animate-pulse"></div>
+          </div>
+        </div>
+      </div>
   );
 
   if (!product) return <div className="text-center py-10">Product not found.</div>;

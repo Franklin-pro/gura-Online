@@ -28,16 +28,10 @@ const Index = () => {
   }, []);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const checkIsReady = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch('https://gura-online-bn.onrender.com/api/v1/products');
-        const result = await response.json();
-        if (result.success) {
-          setProducts(result.data);
-        } else {
-          console.error('Failed to fetch products:', result.message);
-        }
+       await fetch('https://gura-online-bn.onrender.com/health')
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
@@ -45,7 +39,7 @@ const Index = () => {
       }
     };
 
-    fetchData();
+    checkIsReady();
   }, []);
 
   if (showSplash) {

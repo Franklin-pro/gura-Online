@@ -19,7 +19,6 @@ export default function AdminProducts() {
   const { deleteProduct, toggleFeaturedProduct, fetchAllProducts, products } =
     useProductStore();
 
-  console.log("products", products);
   useEffect(() => {
     fetchAllProducts();
   }, [fetchAllProducts]);

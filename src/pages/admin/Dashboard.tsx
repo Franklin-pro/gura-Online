@@ -31,9 +31,26 @@ import { format } from "date-fns";
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'];
 
+interface Order {
+  _id: string;
+  orderNumber: string;
+  totalAmount: number;
+  status: string;
+  createdAt: string;
+  user?: { name: string };
+}
+
+interface Product {
+  _id: string;
+  name: string;
+  category: string;
+  rating: number;
+  createdAt: string;
+}
+
 export default function Dashboard() {
-  const [orders, setOrders] = useState<any[]>([]);
-  const [products, setProducts] = useState<any[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -62,8 +79,8 @@ export default function Dashboard() {
         setOrders(ordersData.data || []);
         setProducts(productsData.data || []);
         setError(null);
-      } catch (err: any) {
-        setError(err.message);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An error occurred');
         console.error("Dashboard data fetch error:", err);
       } finally {
         setLoading(false);
@@ -100,7 +117,7 @@ export default function Dashboard() {
 
   // Prepare monthly data for charts
   const monthlyData = useMemo(() => {
-    const months: Record<string, any> = {};
+    const months: Record<string, { month: string; revenue: number; orders: number; products: number }> = {};
     
     orders.forEach(order => {
       const month = format(new Date(order.createdAt), "MMM");
@@ -121,21 +138,39 @@ export default function Dashboard() {
     return Object.values(months).slice(-6); // Last 6 months
   }, [orders, products]);
 
-  // Prepare category data
+  // Custom tooltip for bar chart
+  function CustomTooltip({ payload, label, active }: { payload?: any[]; label?: string; active?: boolean }) {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-white p-3 border rounded shadow-lg">
+          <p className="font-medium">{`${label}: $${payload[0].value}`}</p>
+          <p className="text-sm text-gray-600">Monthly revenue performance</p>
+        </div>
+      );
+    }
+    return null;
+  }
+
+  // Prepare order status data
   const categoryData = useMemo(() => {
-    const categories: Record<string, number> = {};
+    const statuses: Record<string, number> = {};
     
-    products.forEach(product => {
-      const category = product.category || "Uncategorized";
-      categories[category] = (categories[category] || 0) + 1;
+    orders.forEach(order => {
+      const status = order.status || "unknown";
+      statuses[status] = (statuses[status] || 0) + 1;
     });
 
-    return Object.entries(categories).map(([name, value]) => ({
+    return Object.entries(statuses).map(([name, value]) => ({
       name,
       value,
-      products: products.filter(p => p.category === name).length
+      products: value
     })).sort((a, b) => b.value - a.value);
-  }, [products]);
+  }, [orders]);
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return format(date, "MMM d, yyyy, h:mm a");
+  };
 
   // Prepare rating distribution
   const ratingData = useMemo(() => {
@@ -162,10 +197,10 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="space-y-6 p-4">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Business Dashboard</h1>
-        <div className="flex items-center space-x-2">
+    <div className="space-y-4 sm:space-y-6 p-2 sm:p-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <h1 className="text-2xl sm:text-3xl font-bold">Business Dashboard</h1>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
           <Badge variant="outline" className="bg-blue-50 text-blue-600">
             <Activity className="h-4 w-4 mr-2" />
             Live Data
@@ -177,7 +212,7 @@ export default function Dashboard() {
       </div>
 
       {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Revenue</CardTitle>
@@ -200,7 +235,7 @@ export default function Dashboard() {
             <div className="text-2xl font-bold">{metrics.totalOrders}</div>
             <p className="text-xs text-muted-foreground mt-1">
               <span className={metrics.pendingOrders > 0 ? "text-orange-500" : "text-green-600"}>
-                {metrics.pendingOrders} pending
+                {metrics.pendingOrders} processing
               </span>
             </p>
           </CardContent>
@@ -234,38 +269,21 @@ export default function Dashboard() {
       </div>
 
       {/* Analytics Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
         <Card>
           <CardHeader>
             <CardTitle>Monthly Performance</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-[300px]">
+            <div className="h-[250px] sm:h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={monthlyData}>
+                <BarChart data={monthlyData}>
                   <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
                   <XAxis dataKey="month" />
-                  <YAxis yAxisId="left" orientation="left" stroke="#3b82f6" />
-                  <YAxis yAxisId="right" orientation="right" stroke="#10b981" />
-                  <Tooltip />
-                  <Legend />
-                  <Line
-                    yAxisId="left"
-                    type="monotone"
-                    dataKey="revenue"
-                    stroke="#3b82f6"
-                    name="Revenue ($)"
-                    strokeWidth={2}
-                  />
-                  <Line
-                    yAxisId="right"
-                    type="monotone"
-                    dataKey="orders"
-                    stroke="#10b981"
-                    name="Orders"
-                    strokeWidth={2}
-                  />
-                </LineChart>
+                  <YAxis />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar dataKey="revenue" fill="#8884d8" />
+                </BarChart>
               </ResponsiveContainer>
             </div>
           </CardContent>
@@ -276,7 +294,7 @@ export default function Dashboard() {
             <CardTitle>Product Categories</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-[300px]">
+            <div className="h-[250px] sm:h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
                 <RechartsPieChart>
                   <Pie
@@ -310,13 +328,13 @@ export default function Dashboard() {
       </div>
 
       {/* Additional Insights */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
         <Card>
           <CardHeader>
             <CardTitle>Product Ratings Distribution</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-[300px]">
+            <div className="h-[250px] sm:h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                   layout="vertical"
@@ -341,59 +359,28 @@ export default function Dashboard() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Quick Stats</CardTitle>
+            <CardTitle>Processing Orders</CardTitle>
           </CardHeader>
-          <CardContent className="grid grid-cols-2 gap-4">
-            <div className="p-4 bg-blue-50 rounded-lg">
-              <div className="flex items-center space-x-2">
-                <PieChart className="h-5 w-5 text-blue-600" />
-                <span className="font-medium">Top Category</span>
-              </div>
-              <div className="text-2xl font-bold mt-2">
-                {categoryData[0]?.name || "N/A"}
-              </div>
-              <div className="text-sm text-muted-foreground">
-                {categoryData[0]?.value || 0} products
-              </div>
-            </div>
-
-            <div className="p-4 bg-green-50 rounded-lg">
-              <div className="flex items-center space-x-2">
-                <Star className="h-5 w-5 text-green-600" />
-                <span className="font-medium">Avg Rating</span>
-              </div>
-              <div className="text-2xl font-bold mt-2">
-                {metrics.avgRating.toFixed(1)}
-              </div>
-              <div className="text-sm text-muted-foreground">
-                across {metrics.totalProducts} products
-              </div>
-            </div>
-
-            <div className="p-4 bg-purple-50 rounded-lg">
-              <div className="flex items-center space-x-2">
-                <ShoppingCart className="h-5 w-5 text-purple-600" />
-                <span className="font-medium">Order Completion</span>
-              </div>
-              <div className="text-2xl font-bold mt-2">
-                {metrics.completedOrders}
-              </div>
-              <div className="text-sm text-muted-foreground">
-                {((metrics.completedOrders / metrics.totalOrders) * 100 || 0).toFixed(1)}% rate
-              </div>
-            </div>
-
-            <div className="p-4 bg-orange-50 rounded-lg">
-              <div className="flex items-center space-x-2">
-                <Package className="h-5 w-5 text-orange-600" />
-                <span className="font-medium">New Products</span>
-              </div>
-              <div className="text-2xl font-bold mt-2">
-                {products.filter(p => new Date(p.createdAt) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)).length}
-              </div>
-              <div className="text-sm text-muted-foreground">
-                added last 30 days
-              </div>
+          <CardContent>
+            <div className="space-y-3 max-h-[250px] sm:max-h-[300px] overflow-y-auto">
+              {orders.filter(order => order.status === "processing").slice(0, 10).map((order) => (
+                <div key={order._id} className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg border">
+                  <div>
+                    <div className="font-medium">{order.orderNumber} - <span className="font-bold">{order.products[0].name || "Unknown"}</span></div>
+                    <div className="text-sm text-gray-600">{order.user?.name || "Unknown"}</div>
+                    <div className="text-sm text-gray-600">{ formatDate(order.createdAt) || "Unknown"}</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-bold">${order.totalAmount}</div>
+                    <div className="text-xs text-yellow-600">Processing</div>
+                  </div>
+                </div>
+              ))}
+              {orders.filter(order => order.status === "processing").length === 0 && (
+                <div className="text-center py-8 text-gray-500">
+                  No processing orders
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>

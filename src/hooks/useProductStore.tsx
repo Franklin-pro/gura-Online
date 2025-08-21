@@ -116,7 +116,6 @@ fetchSingleProduct: async (productId:string) => {
 			set({ products: response.data.data, loading: false });
 		} catch (error) {
 			set({ error: "Failed to fetch products", loading: false });
-			console.log("Error fetching featured products:", error);
 		}
 	},
 addCart: async (productId, quantity = 1) => {
@@ -134,7 +133,6 @@ addCart: async (productId, quantity = 1) => {
       }
     );
 
-    console.log(response.data.data);
     toast.success("Product added to cart");
   } catch (error) {
     console.error(error);

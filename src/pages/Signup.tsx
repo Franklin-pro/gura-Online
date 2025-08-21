@@ -1,30 +1,110 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { LucideApple, Globe, Mail } from "lucide-react";
+import { LucideApple, Globe, Mail, Eye, EyeOff, ChevronDown } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import useRegister from "@/hooks/useRegister";
 
+interface Country {
+  code: string;
+  name: string;
+  phoneCode: string;
+  flag: string;
+}
+
+const getPhoneLength = (countryCode: string): number => {
+  const phoneLengths: Record<string, number> = {
+    'US': 10, 'CA': 10, 'RW': 9, 'GB': 10, 'AU': 9,
+    'DE': 11, 'FR': 10, 'IN': 10, 'JP': 11, 'CN': 11
+  };
+  return phoneLengths[countryCode] || 10;
+};
+
 export default function Signup() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [showPassword,setShowPassword] = useState(false)
   const [password, setPassword] = useState("");
   const [phone, setPhone] = useState("");
+  const [countries, setCountries] = useState<Country[]>([]);
+  const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
+  const [showCountryDropdown, setShowCountryDropdown] = useState(false);
   const { register, isLoading } = useRegister();
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
 
+  useEffect(() => {
+    // Fetch countries from API
+    fetch('https://gura-online-bn.onrender.com/api/v1/countries')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setCountries(data.data);
+          setSelectedCountry(data.data[0]);
+          
+          // Detect country by IP
+          fetch('https://ipapi.co/json/')
+            .then(res => res.json())
+            .then(ipData => {
+              const country = data.data.find((c: Country) => c.code === ipData.country_code);
+              if (country) setSelectedCountry(country);
+            })
+            .catch(() => {});
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    const success = await register({ name, email,phone, password });
+    if (!selectedCountry) return;
+    const cleanPhone = phone.replace(/[^\d]/g, '');
+    const fullPhone = `${selectedCountry.phoneCode}${cleanPhone}`;
+    const success = await register({ name, email, phone: fullPhone, password });
     if (success) {
       navigate("/login");
     }
+  };
+
+  const handleShowPassword = () => {
+    setShowPassword(!showPassword);
+  };
+
+  const formatPhoneNumber = (value: string, countryCode: string) => {
+    const phoneNumber = value.replace(/[^\d]/g, '');
+    const maxLength = getPhoneLength(countryCode);
+    const truncated = phoneNumber.slice(0, maxLength);
+    
+    if (countryCode === 'US' || countryCode === 'CA') {
+      if (truncated.length <= 3) return truncated;
+      if (truncated.length <= 6) return `(${truncated.slice(0, 3)}) ${truncated.slice(3)}`;
+      return `(${truncated.slice(0, 3)}) ${truncated.slice(3, 6)}-${truncated.slice(6)}`;
+    } else if (countryCode === 'RW') {
+      if (truncated.length <= 3) return truncated;
+      if (truncated.length <= 6) return `${truncated.slice(0, 3)} ${truncated.slice(3)}`;
+      return `${truncated.slice(0, 3)} ${truncated.slice(3, 6)} ${truncated.slice(6)}`;
+    } else {
+      if (truncated.length <= 3) return truncated;
+      if (truncated.length <= 6) return `${truncated.slice(0, 3)} ${truncated.slice(3)}`;
+      return `${truncated.slice(0, 3)} ${truncated.slice(3, 6)} ${truncated.slice(6)}`;
+    }
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!selectedCountry) return;
+ const value = e.target.value.replace(/[^\d\s()-]/g, '');
+    const formattedPhone = formatPhoneNumber(value, selectedCountry.code);
+    setPhone(formattedPhone);
+  };
+
+  const handleCountrySelect = (country: Country) => {
+    setSelectedCountry(country);
+    setShowCountryDropdown(false);
   };
 
   return (
@@ -63,27 +143,76 @@ export default function Signup() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="phone">Phone Number</Label>
-                  <Input
-                    id="phone"
-                    type="tel"
-                    placeholder="+1 234 567 8900"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    required
-                  />
+                  <Label htmlFor="phone" className="text-sm font-medium text-gray-700">Phone Number</Label>
+                  <div className="relative">
+                    <div className="flex items-center  transition-all duration-200">
+                      <div className="relative">
+                        <button
+                          type="button"
+                          onClick={() => setShowCountryDropdown(!showCountryDropdown)}
+                          className="flex items-center px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors duration-200 rounded-l-lg border-r border-gray-300 min-w-[100px] justify-center"
+                        >
+                          <span className="text-lg mr-2">{selectedCountry?.flag}</span>
+                          <span className="text-sm font-medium text-gray-700">{selectedCountry?.phoneCode}</span>
+                          <ChevronDown size={16} className="ml-2 text-gray-500" />
+                        </button>
+                        {showCountryDropdown && (
+                          <div className="absolute top-full left-0 z-20 w-80 bg-white border border-gray-200 rounded-lg shadow-xl max-h-60 overflow-y-auto mt-1">
+                            <div className="p-2">
+                              {countries.map((country) => (
+                                <button
+                                  key={country.code}
+                                  type="button"
+                                  onClick={() => handleCountrySelect(country)}
+                                  className="w-full flex items-center px-3 py-2.5 text-left hover:bg-gray-50 rounded-md transition-colors duration-150 group"
+                                >
+                                  <span className="text-lg mr-3">{country.flag}</span>
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center justify-between">
+                                      <span className="text-sm font-medium text-gray-900 truncate">{country.name}</span>
+                                      <span className="text-sm text-gray-500 font-mono ml-2">{country.phoneCode}</span>
+                                    </div>
+                                  </div>
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1 relative">
+                        <Input
+                          id="phone"
+                          type="tel"
+                          placeholder="78 123 456"
+                          value={phone}
+                          onChange={handlePhoneChange}
+                          className="border rounded-none rounded-r-lg focus:ring-0 focus:border-transparent px-4 py-6 text-base"
+                          required
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="password">Password</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={handleShowPassword}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                    >
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
                 </div>
 
                 <div className="flex items-center space-x-2">
